@@ -55,6 +55,7 @@ const seedState = () => ({
   ],
   selectedDate: toDateKey(dayOffset(3)),
   openedListId: null,
+  listReturnView: "today-view",
   lastDailyDate: toDateKey(dayOffset(0))
 });
 
@@ -126,7 +127,7 @@ const renderToday = () => {
     const openButton = document.createElement("button");
     openButton.type = "button";
     openButton.textContent = "열기";
-    openButton.addEventListener("click", () => openList(list.id));
+    openButton.addEventListener("click", () => openList(list.id, "today-view"));
     card.append(openButton);
     return card;
   }));
@@ -213,13 +214,14 @@ const renderPlan = () => {
     button.type = "button";
     button.className = "chip";
     button.textContent = list.title;
-    button.addEventListener("click", () => openList(list.id));
+    button.addEventListener("click", () => openList(list.id, "plan-view"));
     return button;
   }));
 };
 
-const openList = (id) => {
+const openList = (id, returnView) => {
   state.openedListId = id;
+  state.listReturnView = returnView;
   persist();
   activateView("list-view");
 };
@@ -230,6 +232,12 @@ const renderList = () => {
   $("#list-title").textContent = list.title;
   $("#list-date").textContent = formatDate(list.date, { month: "long", day: "numeric", weekday: "short" });
   $("#list-input").placeholder = `${list.title} 항목 입력`;
+  const backButton = $("#list-back-button");
+  if (state.listReturnView === "plan-view") {
+    backButton.textContent = `${formatDate(list.date, { month: "numeric", day: "numeric" })} 계획으로`;
+  } else {
+    backButton.textContent = "오늘로";
+  }
   $("#list-items").replaceChildren(...list.items.map((item) => renderTask(item, (id) => {
     const target = list.items.find((entry) => entry.id === id);
     target.completed = !target.completed;
@@ -326,7 +334,11 @@ $("#new-list-form").addEventListener("submit", (event) => {
   input.value = "";
   $("#new-list-form").classList.add("hidden");
   persist();
-  openList(list.id);
+  renderPlan();
+});
+
+$("#list-back-button").addEventListener("click", () => {
+  activateView(state.listReturnView || "today-view");
 });
 
 $("#list-form").addEventListener("submit", (event) => {
