@@ -6,7 +6,7 @@
 ## Project Status
 
 - Role: Product Planner
-- Stage: MVP planning
+- Stage: Clickable prototype
 - Platform: iPhone-first PWA web application
 - Constraint: No login in the first release
 
@@ -38,6 +38,18 @@
 
 PWA는 iPhone의 네이티브 홈 화면 위젯을 제공하지 않습니다. 이번 MVP에서는
 위젯 대신 홈 화면에서 빠르게 접근하는 모바일 경험을 검증합니다.
+
+## Clickable Prototype
+
+[프로토타입 실행하기](https://jiyeongoing.github.io/to-do-list-application/)
+
+- `오늘 / 데일리` 탭 전환
+- 날짜별 계획 화면 이동
+- 목적별 리스트 생성 및 단독 체크리스트 확인
+- 할 일 추가와 완료 체크
+
+프로토타입은 화면 흐름 검증을 위해 `localStorage`를 사용합니다. 실제 MVP에서는
+기획 정책에 맞춰 `IndexedDB` 기반 저장으로 구현할 예정입니다.
 
 ## MVP Scope
 

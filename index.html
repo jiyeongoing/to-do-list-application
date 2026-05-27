@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f6f2">
+    <title>Swipe Todo - Prototype</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="prototype">
+      <div class="brand">
+        <p class="brand-kicker">Clickable prototype</p>
+        <h1>Swipe Todo</h1>
+      </div>
+
+      <section class="phone" aria-label="Swipe Todo 모바일 프로토타입">
+        <div class="notch" aria-hidden="true"></div>
+
+        <div id="today-view" class="view active">
+          <header class="screen-header">
+            <div>
+              <h2>오늘</h2>
+              <p id="today-count" class="subline"></p>
+            </div>
+            <time id="today-date" class="date-label"></time>
+          </header>
+
+          <nav class="segmented" aria-label="기본 목록">
+            <button type="button" class="segment active" data-view="today-view">오늘</button>
+            <button type="button" class="segment" data-view="daily-view">데일리</button>
+          </nav>
+
+          <form id="today-form" class="entry">
+            <label class="sr-only" for="today-input">오늘 할 일</label>
+            <input id="today-input" placeholder="오늘 할 일 입력" autocomplete="off" required>
+            <button type="submit">추가</button>
+          </form>
+
+          <div id="today-items" class="items"></div>
+          <div id="arrived-lists" class="items cards"></div>
+          <div id="done-items" class="items completed"></div>
+
+          <button type="button" class="plan-link" data-view="plan-view">계획하기 <span>→</span></button>
+        </div>
+
+        <div id="daily-view" class="view">
+          <header class="screen-header">
+            <div>
+              <h2>데일리</h2>
+              <p class="subline">매일 오늘에 자동 생성</p>
+            </div>
+          </header>
+
+          <nav class="segmented" aria-label="기본 목록">
+            <button type="button" class="segment" data-view="today-view">오늘</button>
+            <button type="button" class="segment active" data-view="daily-view">데일리</button>
+          </nav>
+
+          <form id="daily-form" class="entry">
+            <label class="sr-only" for="daily-input">반복 루틴</label>
+            <input id="daily-input" placeholder="반복 루틴 입력" autocomplete="off" required>
+            <button type="submit">추가</button>
+          </form>
+
+          <div id="daily-items" class="items"></div>
+        </div>
+
+        <div id="plan-view" class="view">
+          <header class="screen-header back-header">
+            <div>
+              <h2>날짜별 계획</h2>
+              <p class="subline">할 일을 미리 적어두세요</p>
+            </div>
+            <button class="back" type="button" data-view="today-view">닫기</button>
+          </header>
+
+          <div id="date-picker" class="date-picker" aria-label="계획 날짜 선택"></div>
+
+          <form id="plan-form" class="entry">
+            <label class="sr-only" for="plan-input">예약할 일</label>
+            <input id="plan-input" placeholder="선택 날짜 할 일 입력" autocomplete="off" required>
+            <button type="submit">추가</button>
+          </form>
+
+          <div id="planned-items" class="items compact"></div>
+
+          <section class="list-builder">
+            <div class="section-title">
+              <h3>별도 리스트</h3>
+              <button type="button" id="new-list-button">+ 리스트</button>
+            </div>
+            <form id="new-list-form" class="entry list-entry hidden">
+              <label class="sr-only" for="new-list-input">새 리스트 이름</label>
+              <input id="new-list-input" placeholder="예: 장보기, 여행 준비" autocomplete="off" required>
+              <button type="button" id="cancel-list-button" class="secondary">취소</button>
+              <button type="submit">만들기</button>
+            </form>
+            <div id="planned-lists" class="list-chips"></div>
+          </section>
+        </div>
+
+        <div id="list-view" class="view">
+          <header class="screen-header back-header">
+            <div>
+              <h2 id="list-title">장보기</h2>
+              <p id="list-date" class="subline"></p>
+            </div>
+            <button class="back" type="button" data-view="today-view">오늘로</button>
+          </header>
+
+          <form id="list-form" class="entry">
+            <label class="sr-only" for="list-input">목록 항목</label>
+            <input id="list-input" placeholder="항목 입력" autocomplete="off" required>
+            <button type="submit">추가</button>
+          </form>
+
+          <div id="list-items" class="items"></div>
+        </div>
+      </section>
+
+      <button id="reset-button" class="reset" type="button">샘플 데이터로 초기화</button>
+    </main>
+  </body>
+</html>
