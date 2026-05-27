@@ -91,12 +91,6 @@
               <h3>별도 리스트</h3>
               <button type="button" id="new-list-button">+ 리스트</button>
             </div>
-            <form id="new-list-form" class="entry list-entry hidden">
-              <label class="sr-only" for="new-list-input">새 리스트 이름</label>
-              <input id="new-list-input" placeholder="예: 장보기, 여행 준비" autocomplete="off" required>
-              <button type="button" id="cancel-list-button" class="secondary">취소</button>
-              <button type="submit">만들기</button>
-            </form>
             <div id="planned-lists" class="list-chips"></div>
           </section>
         </div>
@@ -104,11 +98,20 @@
         <div id="list-view" class="view">
           <header class="screen-header back-header">
             <div>
-              <h2 id="list-title">장보기</h2>
+              <h2 id="list-title">별도 리스트</h2>
               <p id="list-date" class="subline"></p>
             </div>
-            <button id="list-back-button" class="back" type="button">오늘로</button>
+            <button id="list-back-button" class="back" type="button">계획으로</button>
           </header>
+
+          <form id="list-title-form" class="list-editor">
+            <label class="sr-only" for="list-title-input">리스트 이름</label>
+            <input id="list-title-input" placeholder="예: 장보기, 여행 준비" autocomplete="off" required>
+            <div class="editor-actions">
+              <button type="submit" class="save">등록</button>
+              <button id="delete-list-button" type="button" class="remove">삭제</button>
+            </div>
+          </form>
 
           <form id="list-form" class="entry">
             <label class="sr-only" for="list-input">목록 항목</label>

@@ -65,6 +65,8 @@ const loadState = () => {
 };
 
 let state = loadState();
+let draftList = null;
+let editingDraft = false;
 
 const persist = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -220,18 +222,38 @@ const renderPlan = () => {
 };
 
 const openList = (id, returnView) => {
+  draftList = null;
+  editingDraft = false;
   state.openedListId = id;
   state.listReturnView = returnView;
   persist();
   activateView("list-view");
 };
 
+const openNewList = () => {
+  draftList = {
+    id: newId(),
+    title: "",
+    date: state.selectedDate,
+    items: []
+  };
+  editingDraft = true;
+  state.listReturnView = "plan-view";
+  activateView("list-view");
+};
+
+const activeList = () => {
+  if (editingDraft) return draftList;
+  return state.lists.find((item) => item.id === state.openedListId) || state.lists[0];
+};
+
 const renderList = () => {
-  const list = state.lists.find((item) => item.id === state.openedListId) || state.lists[0];
-  state.openedListId = list.id;
-  $("#list-title").textContent = list.title;
+  const list = activeList();
+  if (!editingDraft) state.openedListId = list.id;
+  $("#list-title").textContent = list.title || "새 리스트";
   $("#list-date").textContent = formatDate(list.date, { month: "long", day: "numeric", weekday: "short" });
-  $("#list-input").placeholder = `${list.title} 항목 입력`;
+  $("#list-title-input").value = list.title;
+  $("#list-input").placeholder = `${list.title || "리스트"} 항목 입력`;
   const backButton = $("#list-back-button");
   if (state.listReturnView === "plan-view") {
     backButton.textContent = `${formatDate(list.date, { month: "numeric", day: "numeric" })} 계획으로`;
@@ -241,11 +263,11 @@ const renderList = () => {
   $("#list-items").replaceChildren(...list.items.map((item) => renderTask(item, (id) => {
     const target = list.items.find((entry) => entry.id === id);
     target.completed = !target.completed;
-    persist();
+    if (!editingDraft) persist();
     renderList();
   }, (id) => {
     list.items = list.items.filter((entry) => entry.id !== id);
-    persist();
+    if (!editingDraft) persist();
     renderList();
   })));
 };
@@ -317,37 +339,48 @@ $("#plan-form").addEventListener("submit", (event) => {
 });
 
 $("#new-list-button").addEventListener("click", () => {
-  $("#new-list-form").classList.remove("hidden");
-  $("#new-list-input").focus();
+  openNewList();
+  $("#list-title-input").focus();
 });
 
-$("#cancel-list-button").addEventListener("click", () => {
-  $("#new-list-input").value = "";
-  $("#new-list-form").classList.add("hidden");
-});
-
-$("#new-list-form").addEventListener("submit", (event) => {
+$("#list-title-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  const input = $("#new-list-input");
-  const list = { id: newId(), title: input.value.trim(), date: state.selectedDate, items: [] };
-  state.lists.push(list);
-  input.value = "";
-  $("#new-list-form").classList.add("hidden");
+  const list = activeList();
+  list.title = $("#list-title-input").value.trim();
+  if (editingDraft) {
+    state.lists.push(list);
+    state.openedListId = list.id;
+    draftList = null;
+    editingDraft = false;
+  }
   persist();
-  renderPlan();
+  activateView(state.listReturnView || "plan-view");
 });
 
 $("#list-back-button").addEventListener("click", () => {
+  draftList = null;
+  editingDraft = false;
   activateView(state.listReturnView || "today-view");
+});
+
+$("#delete-list-button").addEventListener("click", () => {
+  const list = activeList();
+  if (!editingDraft) {
+    state.lists = state.lists.filter((item) => item.id !== list.id);
+    persist();
+  }
+  draftList = null;
+  editingDraft = false;
+  activateView(state.listReturnView || "plan-view");
 });
 
 $("#list-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#list-input");
-  const list = state.lists.find((item) => item.id === state.openedListId);
+  const list = activeList();
   list.items.push({ id: newId(), title: input.value.trim(), completed: false });
   input.value = "";
-  persist();
+  if (!editingDraft) persist();
   renderList();
 });
 

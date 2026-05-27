@@ -386,19 +386,6 @@ button {
   font-weight: 600;
 }
 
-.list-entry {
-  margin-bottom: 12px;
-}
-
-.list-entry.hidden {
-  display: none;
-}
-
-.list-entry .secondary {
-  color: #5e5b55;
-  background: var(--surface);
-}
-
 .list-chips {
   display: flex;
   flex-wrap: wrap;
@@ -415,6 +402,43 @@ button {
 
 .chip.arrived {
   background: var(--accent-surface);
+}
+
+.list-editor {
+  margin-bottom: 18px;
+}
+
+.list-editor input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 14px;
+  border: 1px solid #ccc8c2;
+  border-radius: 14px;
+  outline: none;
+  font-size: 14px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.editor-actions .save {
+  color: #fff;
+  background: var(--ink);
+}
+
+.editor-actions .remove {
+  color: #6b4e49;
+  background: #f2ece9;
 }
 
 .daily-task {
