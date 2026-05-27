@@ -9,11 +9,21 @@ const toDateKey = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const toMonthKey = (date) => toDateKey(date).slice(0, 7);
+
 const dayOffset = (days) => {
   const date = new Date();
   date.setHours(0, 0, 0, 0);
   date.setDate(date.getDate() + days);
   return date;
+};
+
+const monthFromKey = (monthKey) => new Date(`${monthKey}-01T00:00:00`);
+
+const shiftMonth = (monthKey, months) => {
+  const date = monthFromKey(monthKey);
+  date.setMonth(date.getMonth() + months);
+  return toMonthKey(date);
 };
 
 const newId = () => crypto.randomUUID();
@@ -109,6 +119,27 @@ const renderTask = (task, onCheck, onDelete) => {
   return row;
 };
 
+const createMoveButton = (label, text, disabled, onClick) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "reorder";
+  button.textContent = text;
+  button.disabled = disabled;
+  button.setAttribute("aria-label", label);
+  button.addEventListener("click", onClick);
+  return button;
+};
+
+const reorderVisibleItems = (items, visibleIds, id, distance) => {
+  const position = visibleIds.indexOf(id);
+  const destination = position + distance;
+  if (position < 0 || destination < 0 || destination >= visibleIds.length) return false;
+  const fromIndex = items.findIndex((item) => item.id === visibleIds[position]);
+  const toIndex = items.findIndex((item) => item.id === visibleIds[destination]);
+  [items[fromIndex], items[toIndex]] = [items[toIndex], items[fromIndex]];
+  return true;
+};
+
 const renderToday = () => {
   const dateKey = toDateKey(dayOffset(0));
   $("#today-date").textContent = formatDate(dateKey, { month: "long", day: "numeric" });
@@ -121,16 +152,24 @@ const renderToday = () => {
   if (!incomplete.length) pendingNode.innerHTML = '<p class="empty">오늘 할 일을 모두 끝냈어요.</p>';
 
   const cards = state.lists.filter((list) => list.date <= dateKey && list.items.some((item) => !item.completed));
-  $("#arrived-lists").replaceChildren(...cards.map((list) => {
+  $("#arrived-lists").replaceChildren(...cards.map((list, index) => {
     const completeCount = list.items.filter((item) => item.completed).length;
     const card = document.createElement("article");
     card.className = "list-card";
     card.innerHTML = `<div><p class="card-label">예약 리스트</p><p>${list.title} ${completeCount} / ${list.items.length} 완료</p></div>`;
     const openButton = document.createElement("button");
     openButton.type = "button";
+    openButton.className = "open-list";
     openButton.textContent = "열기";
     openButton.addEventListener("click", () => openList(list.id, "today-view"));
-    card.append(openButton);
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+    actions.append(
+      createMoveButton(`${list.title} 위로 이동`, "↑", index === 0, () => moveArrivedList(list.id, -1)),
+      createMoveButton(`${list.title} 아래로 이동`, "↓", index === cards.length - 1, () => moveArrivedList(list.id, 1)),
+      openButton
+    );
+    card.append(actions);
     return card;
   }));
 };
@@ -150,7 +189,7 @@ const deleteToday = (id) => {
 
 const renderDaily = () => {
   const root = $("#daily-items");
-  root.replaceChildren(...state.daily.map((routine) => {
+  root.replaceChildren(...state.daily.map((routine, index) => {
     const row = document.createElement("article");
     row.className = "daily-task";
     const title = document.createElement("span");
@@ -166,21 +205,90 @@ const renderDaily = () => {
       persist();
       renderDaily();
     });
-    controls.append(toggle, createDeleteButton(() => {
-      state.daily = state.daily.filter((item) => item.id !== routine.id);
-      persist();
-      renderDaily();
-    }));
+    controls.append(
+      createMoveButton(`${routine.title} 위로 이동`, "↑", index === 0, () => moveDailyItem(routine.id, -1)),
+      createMoveButton(`${routine.title} 아래로 이동`, "↓", index === state.daily.length - 1, () => moveDailyItem(routine.id, 1)),
+      toggle,
+      createDeleteButton(() => {
+        state.daily = state.daily.filter((item) => item.id !== routine.id);
+        persist();
+        renderDaily();
+      })
+    );
     row.append(title, controls);
     return row;
   }));
 };
 
-const planningDates = () => [1, 2, 3, 4, 5].map(dayOffset);
+const monthDates = (monthKey) => {
+  const first = monthFromKey(monthKey);
+  const finalDate = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  return Array.from({ length: finalDate }, (_, index) => {
+    const date = new Date(first);
+    date.setDate(index + 1);
+    return date;
+  });
+};
+
+const availableMonths = () => [0, 1, 2].map((offset) => shiftMonth(toMonthKey(dayOffset(0)), offset));
+
+const chooseMonth = (monthKey) => {
+  const todayKey = toDateKey(dayOffset(0));
+  state.selectedDate = todayKey.startsWith(monthKey) ? todayKey : `${monthKey}-01`;
+  persist();
+  renderPlan();
+};
+
+const changeSelectedDate = (days) => {
+  const selected = new Date(`${state.selectedDate}T00:00:00`);
+  selected.setDate(selected.getDate() + days);
+  if (!availableMonths().includes(toMonthKey(selected))) return;
+  state.selectedDate = toDateKey(selected);
+  persist();
+  renderPlan();
+};
+
+const movePlannedList = (listId, distance) => {
+  const ids = state.lists.filter((list) => list.date === state.selectedDate).map((list) => list.id);
+  if (!reorderVisibleItems(state.lists, ids, listId, distance)) return;
+  persist();
+  renderPlan();
+};
+
+const moveArrivedList = (listId, distance) => {
+  const today = toDateKey(dayOffset(0));
+  const ids = state.lists
+    .filter((list) => list.date <= today && list.items.some((item) => !item.completed))
+    .map((list) => list.id);
+  if (!reorderVisibleItems(state.lists, ids, listId, distance)) return;
+  persist();
+  renderToday();
+};
+
+const moveDailyItem = (itemId, distance) => {
+  const ids = state.daily.map((item) => item.id);
+  if (!reorderVisibleItems(state.daily, ids, itemId, distance)) return;
+  persist();
+  renderDaily();
+};
 
 const renderPlan = () => {
+  const months = availableMonths();
+  const monthLabels = ["이번 달", "다음 달", "다다음 달"];
+  if (!months.includes(state.selectedDate.slice(0, 7))) {
+    state.selectedDate = toDateKey(dayOffset(0));
+  }
+  $("#month-picker").replaceChildren(...months.map((monthKey, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `month-choice ${state.selectedDate.startsWith(monthKey) ? "active" : ""}`;
+    button.innerHTML = `<strong>${formatDate(`${monthKey}-01`, { month: "long" })}</strong><small>${monthLabels[index]}</small>`;
+    button.addEventListener("click", () => chooseMonth(monthKey));
+    return button;
+  }));
+
   const picker = $("#date-picker");
-  picker.replaceChildren(...planningDates().map((date) => {
+  picker.replaceChildren(...monthDates(state.selectedDate.slice(0, 7)).map((date) => {
     const dateKey = toDateKey(date);
     const button = document.createElement("button");
     button.type = "button";
@@ -193,6 +301,10 @@ const renderPlan = () => {
     });
     return button;
   }));
+  const activeDate = picker.querySelector(".active");
+  if (activeDate) activeDate.scrollIntoView({ block: "nearest", inline: "center" });
+  $("#previous-date").disabled = state.selectedDate === `${months[0]}-01`;
+  $("#next-date").disabled = state.selectedDate === toDateKey(monthDates(months[2]).at(-1));
 
   $("#plan-input").placeholder = `${formatDate(state.selectedDate, { month: "long", day: "numeric" })} 할 일 입력`;
   const items = state.planned.filter((item) => item.date === state.selectedDate);
@@ -211,13 +323,30 @@ const renderPlan = () => {
   if (!items.length) itemsNode.innerHTML = '<p class="empty">이 날짜에 예약된 일반 할 일이 없어요.</p>';
 
   const lists = state.lists.filter((list) => list.date === state.selectedDate);
-  $("#planned-lists").replaceChildren(...lists.map((list) => {
+  $("#planned-lists").replaceChildren(...lists.map((list, index) => {
+    const row = document.createElement("div");
+    row.className = "planned-list";
     const button = document.createElement("button");
     button.type = "button";
     button.className = "chip";
     button.textContent = list.title;
     button.addEventListener("click", () => openList(list.id, "plan-view"));
-    return button;
+    const up = document.createElement("button");
+    up.type = "button";
+    up.className = "reorder";
+    up.textContent = "↑";
+    up.disabled = index === 0;
+    up.setAttribute("aria-label", `${list.title} 위로 이동`);
+    up.addEventListener("click", () => movePlannedList(list.id, -1));
+    const down = document.createElement("button");
+    down.type = "button";
+    down.className = "reorder";
+    down.textContent = "↓";
+    down.disabled = index === lists.length - 1;
+    down.setAttribute("aria-label", `${list.title} 아래로 이동`);
+    down.addEventListener("click", () => movePlannedList(list.id, 1));
+    row.append(button, up, down);
+    return row;
   }));
 };
 
@@ -337,6 +466,9 @@ $("#plan-form").addEventListener("submit", (event) => {
   persist();
   renderPlan();
 });
+
+$("#previous-date").addEventListener("click", () => changeSelectedDate(-1));
+$("#next-date").addEventListener("click", () => changeSelectedDate(1));
 
 $("#new-list-button").addEventListener("click", () => {
   openNewList();

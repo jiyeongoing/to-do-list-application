@@ -283,6 +283,12 @@ button {
   margin: 0;
 }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .card-label {
   margin-bottom: 5px !important;
   color: #756b59;
@@ -290,7 +296,7 @@ button {
   font-weight: 700;
 }
 
-.list-card button {
+.list-card .open-list {
   padding: 10px 12px;
   border-radius: 10px;
   color: #fff;
@@ -319,10 +325,71 @@ button {
   background: var(--surface);
 }
 
-.date-picker {
+.month-navigation,
+.date-navigation {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-bottom: 18px;
+}
+
+.month-picker {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+.month-choice {
+  flex: 1;
+  padding: 10px 4px;
+  border-radius: 11px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.month-choice strong,
+.month-choice small {
+  display: block;
+}
+
+.month-choice small {
+  margin-top: 3px;
+  color: #88837d;
+  font-size: 10px;
+}
+
+.month-choice.active {
+  color: #fff;
+  background: var(--ink);
+}
+
+.month-choice.active small {
+  color: #dedbd5;
+}
+
+.arrow {
+  display: grid;
+  width: 30px;
+  height: 42px;
+  place-items: center;
+  border-radius: 11px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 23px;
+  line-height: 1;
+}
+
+.arrow:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.date-picker {
+  display: flex;
+  flex: 1;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -388,20 +455,42 @@ button {
 
 .list-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 9px;
 }
 
+.planned-list {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .chip {
+  flex: 1;
   padding: 13px 16px;
   border-radius: 13px;
   color: #35332f;
   background: var(--surface);
   font-size: 14px;
+  text-align: left;
 }
 
 .chip.arrived {
   background: var(--accent-surface);
+}
+
+.reorder {
+  width: 34px;
+  padding: 10px 0;
+  border-radius: 10px;
+  color: #57534e;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.reorder:disabled {
+  cursor: default;
+  opacity: 0.3;
 }
 
 .list-editor {

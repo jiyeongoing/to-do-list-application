@@ -70,13 +70,21 @@
         <div id="plan-view" class="view">
           <header class="screen-header back-header">
             <div>
-              <h2>날짜별 계획</h2>
+              <h2>계획</h2>
               <p class="subline">할 일을 미리 적어두세요</p>
             </div>
             <button class="back" type="button" data-view="today-view">닫기</button>
           </header>
 
-          <div id="date-picker" class="date-picker" aria-label="계획 날짜 선택"></div>
+          <div class="month-navigation">
+            <div id="month-picker" class="month-picker" aria-label="계획 월 선택"></div>
+          </div>
+
+          <div class="date-navigation">
+            <button type="button" id="previous-date" class="arrow" aria-label="이전 날짜">‹</button>
+            <div id="date-picker" class="date-picker" aria-label="계획 날짜 선택"></div>
+            <button type="button" id="next-date" class="arrow" aria-label="다음 날짜">›</button>
+          </div>
 
           <form id="plan-form" class="entry">
             <label class="sr-only" for="plan-input">예약할 일</label>
