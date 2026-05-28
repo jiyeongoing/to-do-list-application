@@ -12,6 +12,7 @@
 | Stage | Usable PWA Prototype |
 | Platform | iPhone-first PWA Web |
 | Storage | LocalStorage Prototype |
+| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=9 |
 | Repository | to-do-list-application |
 
 ## 2. Problem
@@ -32,6 +33,8 @@
 초기 구조는 `오늘 / 이번주 / 데일리`였지만, 사용 흐름을 줄이기 위해
 `오늘 / 데일리 / 계획`으로 정리했습니다. 기본 화면은 오늘과 데일리만 두고,
 계획은 스와이프 또는 버튼으로 이동하는 보조 화면으로 설계했습니다.
+현재 버전에서는 오늘 화면에서 오른쪽으로 스와이프하면 계획으로 이동하고,
+계획 화면에서 왼쪽으로 스와이프하면 오늘로 돌아옵니다.
 
 | 화면 | 역할 |
 | --- | --- |
@@ -64,17 +67,25 @@
 순서 변경은 리스트 우측의 작은 `▲/▼` 버튼으로 통일했습니다. 맨 위 항목은
 아래 방향만, 맨 아래 항목은 위 방향만 보여 불필요한 버튼을 줄였습니다.
 
+### 데일리 기본값
+
+새로 추가한 데일리 루틴은 기본 `미사용` 상태로 둡니다. 사용자가 루틴을
+만든 즉시 오늘 목록에 섞이는 일을 막고, 실제로 반복할 항목만 직접 켜도록
+했습니다.
+
 ## 5. Prototype Scope
 
 현재 프로토타입에서 구현한 범위는 다음과 같습니다.
 
 - 오늘 할 일 추가, 완료, 삭제, 순서 변경
-- 데일리 루틴 추가, 사용/미사용, 삭제, 순서 변경
+- 데일리 루틴 추가, 기본 미사용, 사용/미사용, 삭제, 순서 변경
+- 계획 진입 시 오늘 날짜 자동 선택
 - 계획 날짜 이동, 오늘 이동, 달력 이동
 - 날짜별 일반 할 일 추가, 삭제, 순서 변경
 - 목적별 리스트 생성, 삭제, 항목 추가, 완료, 순서 변경
 - 오늘 도착 리스트 카드와 완료 수 재계산
 - 계획에서 오늘 날짜 선택 시 오늘 할 일 동기화
+- 오늘 오른쪽 스와이프, 계획 왼쪽 스와이프 이동
 - 과거 날짜 읽기전용 처리
 - 리스트 복사/붙여넣기
 - LocalStorage 기반 데이터 유지
@@ -96,10 +107,17 @@ node --test tests/todo.test.cjs
 검증 케이스:
 
 - 오늘 할 일 순서 변경
+- 첫 실행 빈 목록
+- 샘플 데이터 불러오기와 데이터 비우기
 - 데일리와 계획 항목 순서 변경
+- 새 데일리 루틴 기본 미사용
 - 새 리스트명 유지 버그
 - 오늘 리스트 완료 수 재계산
+- 계획에서 오늘 날짜 선택 시 오늘 할 일 표시
+- 오늘/계획 스와이프 이동
+- 계획에서 오늘 날짜에 추가한 항목의 오늘 저장
 - 캘린더와 오늘 버튼 날짜 이동
+- 계획하기 진입 시 오늘 날짜 초기화
 - 과거 날짜 읽기전용 처리
 - 리스트 복사/붙여넣기
 - 맨 위/맨 아래 순서 버튼 표시 정책
@@ -114,9 +132,9 @@ node --test tests/todo.test.cjs
 | UI | HTML/CSS/JavaScript | Spring Boot + Thymeleaf 또는 REST API |
 | Storage | LocalStorage | IndexedDB, 이후 서버 DB |
 | PWA | Manifest + Service Worker | iPhone 홈 화면 설치 테스트 |
-| Test | Node test runner | 도메인 로직 분리 후 단위 테스트 확대 |
+| Test | Node test runner, 16 cases | 도메인 로직 분리 후 단위 테스트 확대 |
 | Backend | - | Java/Spring Boot API 설계 |
-| Deploy | Local preview | PWA 배포, 홈 화면 설치 검증 |
+| Deploy | GitHub Pages | iPhone 홈 화면 설치 검증 |
 
 ## 8. What I Learned
 
