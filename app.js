@@ -596,8 +596,18 @@ const processDueItems = () => {
 };
 
 let touchStartX = null;
+let touchStartedInPlanNavigation = false;
+const isPlanNavigationTouch = (target) => Boolean(
+  target?.closest("#date-picker") ||
+  target?.closest(".date-navigation") ||
+  target?.closest("#month-picker") ||
+  target?.closest(".month-navigation") ||
+  target?.closest(".calendar-jump")
+);
+
 $(".phone").addEventListener("touchstart", (event) => {
   touchStartX = event.changedTouches[0].clientX;
+  touchStartedInPlanNavigation = $(".view.active")?.id === "plan-view" && isPlanNavigationTouch(event.target);
 }, { passive: true });
 
 $(".phone").addEventListener("touchend", (event) => {
@@ -607,10 +617,11 @@ $(".phone").addEventListener("touchend", (event) => {
   if (distance > 55 && (activeView === "today-view" || activeView === "daily-view")) {
     openPlanForToday();
   }
-  if (distance < -55 && activeView === "plan-view") {
+  if (distance < -55 && activeView === "plan-view" && !touchStartedInPlanNavigation) {
     activateView("today-view");
   }
   touchStartX = null;
+  touchStartedInPlanNavigation = false;
 }, { passive: true });
 
 document.addEventListener("click", (event) => {
@@ -815,6 +826,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=9").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=10").catch(() => {});
   });
 }

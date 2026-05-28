@@ -12,7 +12,7 @@
 | Stage | Usable PWA Prototype |
 | Platform | iPhone-first PWA Web |
 | Storage | LocalStorage Prototype |
-| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=9 |
+| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=10 |
 | Repository | to-do-list-application |
 
 ## 2. Problem
@@ -115,6 +115,7 @@ node --test tests/todo.test.cjs
 - 오늘 리스트 완료 수 재계산
 - 계획에서 오늘 날짜 선택 시 오늘 할 일 표시
 - 오늘/계획 스와이프 이동
+- 계획 날짜 영역 스와이프 시 화면 전환 방지
 - 계획에서 오늘 날짜에 추가한 항목의 오늘 저장
 - 캘린더와 오늘 버튼 날짜 이동
 - 계획하기 진입 시 오늘 날짜 초기화
@@ -132,7 +133,7 @@ node --test tests/todo.test.cjs
 | UI | HTML/CSS/JavaScript | Spring Boot + Thymeleaf 또는 REST API |
 | Storage | LocalStorage | IndexedDB, 이후 서버 DB |
 | PWA | Manifest + Service Worker | iPhone 홈 화면 설치 테스트 |
-| Test | Node test runner, 16 cases | 도메인 로직 분리 후 단위 테스트 확대 |
+| Test | Node test runner, 17 cases | 도메인 로직 분리 후 단위 테스트 확대 |
 | Backend | - | Java/Spring Boot API 설계 |
 | Deploy | GitHub Pages | iPhone 홈 화면 설치 검증 |
 
