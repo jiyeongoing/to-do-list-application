@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Swipe Todo app icon</title>
+  <desc id="desc">Rounded cream app icon with a dark check mark and simple todo lines</desc>
+  <rect width="512" height="512" rx="112" fill="#f7f6f2"/>
+  <rect x="116" y="126" width="280" height="260" rx="48" fill="#ffffff" stroke="#171716" stroke-width="18"/>
+  <path d="M168 259l56 56 126-138" fill="none" stroke="#171716" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M184 354h148" stroke="#cfc9bd" stroke-width="20" stroke-linecap="round"/>
+  <path d="M184 394h102" stroke="#ded8ce" stroke-width="20" stroke-linecap="round"/>
+</svg>

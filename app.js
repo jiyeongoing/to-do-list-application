@@ -696,3 +696,14 @@ $("#reset-button").addEventListener("click", () => {
 processDueItems();
 renderToday();
 renderDaily();
+
+if (
+  typeof navigator !== "undefined" &&
+  "serviceWorker" in navigator &&
+  typeof location !== "undefined" &&
+  location.protocol.startsWith("http")
+) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}

@@ -77,6 +77,7 @@
 - 과거 날짜 읽기전용 처리
 - 리스트 복사/붙여넣기
 - LocalStorage 기반 데이터 유지
+- PWA manifest와 service worker 기반 앱 셸 캐시
 
 ## 6. Test Strategy
 
@@ -110,6 +111,7 @@ node --test tests/todo.test.cjs
 | --- | --- | --- |
 | UI | HTML/CSS/JavaScript | Spring Boot + Thymeleaf 또는 REST API |
 | Storage | LocalStorage | IndexedDB, 이후 서버 DB |
+| PWA | Manifest + Service Worker | iPhone 홈 화면 설치 테스트 |
 | Test | Node test runner | 도메인 로직 분리 후 단위 테스트 확대 |
 | Deploy | Local preview | PWA 배포, 홈 화면 설치 검증 |
 
@@ -119,10 +121,11 @@ node --test tests/todo.test.cjs
 - 미래 계획은 오늘 화면과 분리해야 현재 실행성이 높아집니다.
 - 목적별 리스트는 단일 투두와 다른 정보 구조로 다루는 편이 좋습니다.
 - 프로토타입 단계에서도 테스트를 작성하면 잦은 UI 변경 중 핵심 동작을 지킬 수 있습니다.
+- PWA는 네이티브 위젯은 어렵지만, 홈 화면 설치와 오프라인 재실행으로 앱 같은 진입 경험을 만들 수 있습니다.
 
 ## 9. Next Steps
 
-- PWA manifest와 service worker 추가
+- 실제 iPhone 홈 화면 설치 테스트
 - IndexedDB 저장 구조 설계
 - Java/Spring Boot 기반 서버 확장 검토
 - 실제 1주 사용 기록 기반 우선순위 조정

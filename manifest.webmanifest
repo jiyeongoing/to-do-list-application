@@ -1,0 +1,19 @@
+{
+  "name": "Swipe Todo",
+  "short_name": "Swipe Todo",
+  "description": "오늘 할 일, 데일리 루틴, 날짜별 계획을 관리하는 iPhone-first PWA 투두리스트",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f6f2",
+  "theme_color": "#f7f6f2",
+  "icons": [
+    {
+      "src": "icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
