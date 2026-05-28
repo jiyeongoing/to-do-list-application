@@ -353,8 +353,28 @@ test("계획에서 오늘 날짜를 선택하면 오늘 할 일을 보여준다"
     renderPlan();
 
     const rows = document.querySelector("#planned-items").children;
-    assert.equal(rows.length, 1);
+    assert.equal(rows.length, 2);
     assert.equal(rows[0].children[1].textContent, "오늘 A");
+    assert.equal(rows[1].children[1].textContent, "완료 B");
+  `);
+});
+
+test("계획 화면에서 과거 날짜로 스와이프해도 오늘 탭으로 이동하지 않는다", () => {
+  runAppTest(`
+    activateView("plan-view");
+    state.selectedDate = toDateKey(dayOffset(-1));
+
+    document.querySelector(".phone").dispatchEvent({
+      type: "touchstart",
+      changedTouches: [{ clientX: 20 }]
+    });
+    document.querySelector(".phone").dispatchEvent({
+      type: "touchend",
+      changedTouches: [{ clientX: 120 }]
+    });
+
+    assert.equal(document.querySelector("#plan-view").classList.contains("active"), true);
+    assert.equal(document.querySelector("#today-view").classList.contains("active"), false);
   `);
 });
 

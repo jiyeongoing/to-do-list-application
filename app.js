@@ -437,7 +437,7 @@ const renderPlan = () => {
   $("#new-list-button").disabled = selectedIsPast;
   $("#paste-list-button").disabled = selectedIsPast || !state.copiedList;
   const items = selectedIsToday
-    ? state.today.filter((item) => !item.completed)
+    ? state.today
     : state.planned.filter((item) => item.date === state.selectedDate);
   const itemsNode = $("#planned-items");
   itemsNode.replaceChildren(...items.map((item, index) => {
@@ -606,9 +606,6 @@ $(".phone").addEventListener("touchend", (event) => {
   const activeView = $(".view.active").id;
   if (distance < -55 && (activeView === "today-view" || activeView === "daily-view")) {
     openPlanForToday();
-  }
-  if (distance > 55 && activeView === "plan-view") {
-    activateView("today-view");
   }
   touchStartX = null;
 }, { passive: true });
@@ -815,6 +812,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=6").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=7").catch(() => {});
   });
 }
