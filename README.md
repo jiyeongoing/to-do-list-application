@@ -8,7 +8,7 @@
 - Demo: https://jiyeongoing.github.io/to-do-list-application/?v=9
 - Repository: https://github.com/jiyeongoing/to-do-list-application
 
-## Portfolio Highlights
+## Project Highlights
 
 - iPhone-first PWA 투두리스트 기획 및 클릭 가능한 프로토타입 구현
 - `오늘 / 데일리 / 계획 / 목적별 리스트` 정보 구조 설계
@@ -121,7 +121,7 @@ node --test tests/todo.test.cjs
 
 ## Deliverables
 
-- [Portfolio Case Study](docs/PORTFOLIO_CASE_STUDY.md)
+- [Project Case Study](docs/PORTFOLIO_CASE_STUDY.md)
 - [Product Brief](docs/PRODUCT_BRIEF.md)
 - [User Flow & Screen Definition](docs/USER_FLOW.md)
 - [Wireframe](docs/WIREFRAME.md)

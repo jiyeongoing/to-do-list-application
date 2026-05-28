@@ -1,4 +1,4 @@
-# Swipe Todo - Portfolio Case Study
+# Swipe Todo - Project Case Study
 
 ## 1. Project Summary
 
@@ -94,8 +94,8 @@
 
 ## 6. Test Strategy
 
-포트폴리오에서 단순 화면 구현이 아니라, 동작 안정성까지 고려했다는 점을
-보여주기 위해 Node 기본 테스트 러너로 TDD 성격의 테스트를 추가했습니다.
+단순 화면 구현이 아니라 동작 안정성까지 고려했다는 점을 보여주기 위해
+Node 기본 테스트 러너로 TDD 성격의 테스트를 추가했습니다.
 
 테스트는 외부 라이브러리 없이 작은 가짜 DOM을 구성해 `app.js`의 실제 로직을
 검증합니다.
