@@ -113,6 +113,7 @@ node --test tests/todo.test.cjs
 | Storage | LocalStorage | IndexedDB, 이후 서버 DB |
 | PWA | Manifest + Service Worker | iPhone 홈 화면 설치 테스트 |
 | Test | Node test runner | 도메인 로직 분리 후 단위 테스트 확대 |
+| Backend | - | Java/Spring Boot API 설계 |
 | Deploy | Local preview | PWA 배포, 홈 화면 설치 검증 |
 
 ## 8. What I Learned
@@ -127,5 +128,5 @@ node --test tests/todo.test.cjs
 
 - 실제 iPhone 홈 화면 설치 테스트
 - IndexedDB 저장 구조 설계
-- Java/Spring Boot 기반 서버 확장 검토
+- [Java/Spring Boot 기반 서버 확장 설계](SPRING_BOOT_EXPANSION.md)
 - 실제 1주 사용 기록 기반 우선순위 조정
