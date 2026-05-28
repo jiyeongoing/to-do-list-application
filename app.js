@@ -28,7 +28,19 @@ const shiftMonth = (monthKey, months) => {
 
 const newId = () => crypto.randomUUID();
 
-const seedState = () => ({
+const createEmptyState = () => ({
+  today: [],
+  daily: [],
+  planned: [],
+  lists: [],
+  selectedDate: toDateKey(dayOffset(0)),
+  openedListId: null,
+  listReturnView: "today-view",
+  copiedList: null,
+  lastDailyDate: toDateKey(dayOffset(0))
+});
+
+const sampleState = () => ({
   today: [
     { id: newId(), title: "서류 제출하기", completed: false },
     { id: newId(), title: "영양제 먹기", completed: true }
@@ -80,26 +92,24 @@ const seedState = () => ({
   lastDailyDate: toDateKey(dayOffset(0))
 });
 
+const normalizeState = (loaded) => ({
+  ...createEmptyState(),
+  ...loaded,
+  today: Array.isArray(loaded?.today) ? loaded.today : [],
+  daily: Array.isArray(loaded?.daily) ? loaded.daily : [],
+  planned: Array.isArray(loaded?.planned) ? loaded.planned : [],
+  lists: Array.isArray(loaded?.lists) ? loaded.lists : [],
+  copiedList: Object.prototype.hasOwnProperty.call(loaded || {}, "copiedList") ? loaded.copiedList : null
+});
+
 const loadState = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
-  const loaded = stored ? JSON.parse(stored) : seedState();
-  if (!Object.prototype.hasOwnProperty.call(loaded, "copiedList")) loaded.copiedList = null;
-  if (!loaded.samplePastListAdded) {
-    const hasPastList = loaded.lists?.some((list) => list.date < toDateKey(dayOffset(0)));
-    if (!hasPastList) {
-      loaded.lists.push({
-        id: newId(),
-        title: "지난 장보기",
-        date: toDateKey(dayOffset(-2)),
-        items: [
-          { id: newId(), title: "두부", completed: true },
-          { id: newId(), title: "김치", completed: true }
-        ]
-      });
-    }
-    loaded.samplePastListAdded = true;
+  if (!stored) return createEmptyState();
+  try {
+    return normalizeState(JSON.parse(stored));
+  } catch {
+    return createEmptyState();
   }
-  return loaded;
 };
 
 let state = loadState();
@@ -108,6 +118,10 @@ let editingDraft = false;
 
 const persist = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+};
+
+const showStatus = (message) => {
+  $("#status-message").textContent = message;
 };
 
 const formatDate = (dateKey, options = {}) => {
@@ -123,6 +137,11 @@ const activateView = (viewId) => {
   if (viewId === "daily-view") renderDaily();
   if (viewId === "plan-view") renderPlan();
   if (viewId === "list-view") renderList();
+};
+
+const refreshActiveView = () => {
+  const activeView = $(".view.active")?.id || "today-view";
+  activateView(activeView);
 };
 
 const todayKey = () => toDateKey(dayOffset(0));
@@ -735,12 +754,54 @@ $("#list-form").addEventListener("submit", (event) => {
   renderList();
 });
 
-$("#reset-button").addEventListener("click", () => {
-  state = seedState();
+$("#sample-button").addEventListener("click", () => {
+  state = sampleState();
   persist();
-  renderToday();
-  renderDaily();
+  showStatus("샘플 데이터를 불러왔어요.");
   activateView("today-view");
+});
+
+$("#clear-button").addEventListener("click", () => {
+  state = createEmptyState();
+  persist();
+  showStatus("데이터를 비웠어요.");
+  activateView("today-view");
+});
+
+$("#export-button").addEventListener("click", () => {
+  const payload = {
+    app: "Swipe Todo",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `swipe-todo-backup-${todayKey()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showStatus("백업 파일을 만들었어요.");
+});
+
+$("#import-input").addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      state = normalizeState(parsed.state || parsed);
+      persist();
+      showStatus("백업을 복원했어요.");
+      refreshActiveView();
+    } catch {
+      showStatus("복원 파일을 확인해 주세요.");
+    }
+    event.target.value = "";
+  });
+  reader.readAsText(file);
 });
 
 processDueItems();
@@ -754,6 +815,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=3").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=4").catch(() => {});
   });
 }

@@ -653,13 +653,6 @@ button {
   text-align: center;
 }
 
-.reset {
-  color: var(--soft-ink);
-  background: transparent;
-  font-size: 13px;
-  text-decoration: underline;
-}
-
 .sr-only {
   position: absolute;
   overflow: hidden;
@@ -668,23 +661,61 @@ button {
   clip-path: inset(50%);
 }
 
+.utility-panel {
+  width: min(100%, 400px);
+  color: var(--soft-ink);
+  font-size: 12px;
+  text-align: center;
+}
+
+.utility-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.utility-actions button,
+.utility-label {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 32px;
+  cursor: pointer;
+}
+
+.utility-label input {
+  display: none;
+}
+
+.storage-note {
+  margin: 0;
+}
+
 @media (max-width: 430px) {
   .prototype {
     padding: 0;
   }
 
-  .brand,
-  .reset {
+  .brand {
     display: none;
   }
 
   .phone {
     width: 100%;
-    min-height: 100vh;
+    min-height: calc(100vh - 82px);
     border: 0;
     border-radius: 0;
     box-shadow: none;
     padding-top: calc(52px + env(safe-area-inset-top));
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .utility-panel {
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
   }
 }

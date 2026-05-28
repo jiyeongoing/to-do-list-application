@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | Role | Product Planner / Prototype Builder |
-| Stage | Clickable Prototype |
+| Stage | Usable PWA Prototype |
 | Platform | iPhone-first PWA Web |
 | Storage | LocalStorage Prototype |
 | Repository | to-do-list-application |
@@ -78,6 +78,7 @@
 - 과거 날짜 읽기전용 처리
 - 리스트 복사/붙여넣기
 - LocalStorage 기반 데이터 유지
+- JSON 백업/복원과 데이터 비우기
 - PWA manifest와 service worker 기반 앱 셸 캐시
 
 ## 6. Test Strategy

@@ -7,17 +7,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Swipe Todo - Prototype</title>
-    <link rel="manifest" href="manifest.webmanifest?v=3">
-    <link rel="icon" href="icons/app-icon.svg?v=3" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=3">
-    <link rel="stylesheet" href="styles.css?v=3">
-    <script src="app.js?v=3" defer></script>
+    <title>Swipe Todo</title>
+    <link rel="manifest" href="manifest.webmanifest?v=4">
+    <link rel="icon" href="icons/app-icon.svg?v=4" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=4">
+    <link rel="stylesheet" href="styles.css?v=4">
+    <script src="app.js?v=4" defer></script>
   </head>
   <body>
     <main class="prototype">
       <div class="brand">
-        <p class="brand-kicker">Clickable prototype</p>
+        <p class="brand-kicker">iPhone PWA Todo</p>
         <h1>Swipe Todo</h1>
       </div>
 
@@ -145,7 +145,18 @@
         </div>
       </section>
 
-      <button id="reset-button" class="reset" type="button">샘플 데이터로 초기화</button>
+      <section class="utility-panel" aria-label="데이터 관리">
+        <div class="utility-actions">
+          <button id="sample-button" type="button">샘플</button>
+          <button id="export-button" type="button">백업</button>
+          <label class="utility-label">
+            복원
+            <input id="import-input" type="file" accept="application/json">
+          </label>
+          <button id="clear-button" type="button">비우기</button>
+        </div>
+        <p id="status-message" class="storage-note">이 기기에 저장됩니다.</p>
+      </section>
     </main>
   </body>
 </html>

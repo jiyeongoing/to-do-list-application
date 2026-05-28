@@ -206,7 +206,11 @@ const createDocument = () => {
     ["delete-list-button"],
     ["list-form"],
     ["list-submit-button"],
-    ["reset-button"]
+    ["sample-button"],
+    ["export-button"],
+    ["import-input"],
+    ["clear-button"],
+    ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
   document.register("phone", "phone");
   return document;
@@ -248,6 +252,30 @@ test("오늘 할 일은 미완료 항목 안에서 순서를 변경한다", () =
     moveTodayItem("today-b", -1);
     assert.equal(state.today[0].id, "today-b");
     assert.equal(state.today[2].id, "today-c");
+  `);
+});
+
+test("첫 실행은 샘플 없이 빈 목록으로 시작한다", () => {
+  runAppTest(`
+    assert.deepEqual(state.today, []);
+    assert.deepEqual(state.daily, []);
+    assert.deepEqual(state.planned, []);
+    assert.deepEqual(state.lists, []);
+    assert.equal(state.selectedDate, todayKey());
+  `);
+});
+
+test("샘플 불러오기와 데이터 비우기를 지원한다", () => {
+  runAppTest(`
+    document.querySelector("#sample-button").dispatchEvent({ type: "click" });
+    assert.ok(state.today.length > 0);
+    assert.ok(state.lists.length > 0);
+    assert.equal(document.querySelector("#status-message").textContent, "샘플 데이터를 불러왔어요.");
+
+    document.querySelector("#clear-button").dispatchEvent({ type: "click" });
+    assert.deepEqual(state.today, []);
+    assert.deepEqual(state.lists, []);
+    assert.equal(document.querySelector("#status-message").textContent, "데이터를 비웠어요.");
   `);
 });
 
