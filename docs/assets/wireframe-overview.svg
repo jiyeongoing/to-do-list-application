@@ -17,17 +17,20 @@
     <text x="68" y="127" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">오늘</text>
     <text x="189" y="127" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#555555">데일리</text>
     <rect x="20" y="158" width="240" height="42" rx="10" fill="#FFFFFF" stroke="#B9B9B9"/>
-    <text x="34" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">오늘 할 일 입력</text>
+    <text x="34" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">할 일</text>
     <rect x="218" y="165" width="35" height="28" rx="8" fill="#171717"/>
     <text x="226" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">추가</text>
     <rect x="20" y="220" width="240" height="52" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <rect x="34" y="238" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#333333"/>
     <text x="61" y="250" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">서류 제출하기</text>
+    <text x="240" y="252" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="284" width="240" height="62" rx="12" fill="#EFEDE7" stroke="#DAD4C9"/>
-    <text x="34" y="308" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" font-weight="700" fill="#756B59">예약 리스트</text>
+    <text x="34" y="308" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" font-weight="700" fill="#756B59">오늘 리스트</text>
     <text x="34" y="329" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">장보기  1 / 4 완료</text>
-    <rect x="209" y="303" width="37" height="26" rx="8" fill="#171717"/>
-    <text x="216" y="321" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#FFFFFF">열기</text>
+    <rect x="185" y="303" width="37" height="26" rx="8" fill="#171717"/>
+    <text x="192" y="321" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#FFFFFF">열기</text>
+    <text x="240" y="312" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
+    <text x="240" y="324" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="358" width="240" height="52" rx="12" fill="#F4F4F4"/>
     <rect x="34" y="376" width="15" height="15" rx="4" fill="#D3D3D3"/>
     <path d="M37 383 l4 4 8 -10" stroke="#FFFFFF" stroke-width="2" fill="none"/>
@@ -41,27 +44,30 @@
     <rect width="280" height="536" rx="30" fill="#FFFFFF" stroke="#171717" stroke-width="2"/>
     <rect x="104" y="13" width="72" height="7" rx="4" fill="#D7D7D7"/>
     <text x="24" y="57" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="21" font-weight="700" fill="#171717">데일리</text>
-    <text x="24" y="83" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#777777">매일 오늘에 자동 생성</text>
     <rect x="20" y="103" width="240" height="38" rx="12" fill="#F1F1F1"/>
     <text x="70" y="127" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#555555">오늘</text>
     <rect x="141" y="109" width="110" height="26" rx="9" fill="#171717"/>
     <text x="180" y="127" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">데일리</text>
     <rect x="20" y="158" width="240" height="42" rx="10" fill="#FFFFFF" stroke="#B9B9B9"/>
-    <text x="34" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">반복 루틴 입력</text>
+    <text x="34" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">루틴</text>
     <rect x="218" y="165" width="35" height="28" rx="8" fill="#171717"/>
     <text x="226" y="184" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">추가</text>
     <rect x="20" y="220" width="240" height="55" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <text x="34" y="252" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">영양제 먹기</text>
-    <rect x="201" y="238" width="42" height="22" rx="11" fill="#171717"/>
-    <circle cx="232" cy="249" r="8" fill="#FFFFFF"/>
+    <rect x="177" y="238" width="42" height="22" rx="11" fill="#171717"/>
+    <circle cx="208" cy="249" r="8" fill="#FFFFFF"/>
+    <text x="240" y="252" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="287" width="240" height="55" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <text x="34" y="319" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">스트레칭 10분</text>
-    <rect x="201" y="305" width="42" height="22" rx="11" fill="#171717"/>
-    <circle cx="232" cy="316" r="8" fill="#FFFFFF"/>
+    <rect x="177" y="305" width="42" height="22" rx="11" fill="#171717"/>
+    <circle cx="208" cy="316" r="8" fill="#FFFFFF"/>
+    <text x="240" y="314" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
+    <text x="240" y="324" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="354" width="240" height="55" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <text x="34" y="386" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">물 마시기</text>
-    <rect x="201" y="372" width="42" height="22" rx="11" fill="#E0E0E0"/>
-    <circle cx="212" cy="383" r="8" fill="#FFFFFF"/>
+    <rect x="177" y="372" width="42" height="22" rx="11" fill="#E0E0E0"/>
+    <circle cx="188" cy="383" r="8" fill="#FFFFFF"/>
+    <text x="240" y="386" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
   </g>
 
   <!-- Scheduled planning -->
@@ -69,16 +75,13 @@
     <rect width="280" height="536" rx="30" fill="#FFFFFF" stroke="#171717" stroke-width="2"/>
     <rect x="104" y="13" width="72" height="7" rx="4" fill="#D7D7D7"/>
     <text x="24" y="57" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="21" font-weight="700" fill="#171717">계획</text>
-    <text x="24" y="83" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#777777">할 일을 미리 적어두세요</text>
+    <text x="236" y="57" font-family="Arial, Apple Color Emoji, sans-serif" font-size="15" fill="#555555">&#128197;</text>
     <rect x="20" y="104" width="70" height="34" rx="10" fill="#F2F2F2"/>
     <text x="42" y="118" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#555555">5월</text>
-    <text x="35" y="131" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="9" fill="#777777">이번 달</text>
     <rect x="96" y="104" width="70" height="34" rx="10" fill="#171717"/>
     <text x="118" y="118" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#FFFFFF">6월</text>
-    <text x="109" y="131" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="9" fill="#EAEAEA">다음 달</text>
     <rect x="172" y="104" width="70" height="34" rx="10" fill="#F2F2F2"/>
     <text x="194" y="118" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#555555">7월</text>
-    <text x="181" y="131" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="9" fill="#777777">다다음 달</text>
     <text x="22" y="170" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="18" fill="#777777">‹</text>
     <rect x="48" y="148" width="54" height="40" rx="11" fill="#F2F2F2"/>
     <text x="68" y="173" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#555555">02</text>
@@ -88,20 +91,19 @@
     <text x="188" y="173" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#555555">04</text>
     <text x="238" y="170" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="18" fill="#777777">›</text>
     <rect x="20" y="205" width="240" height="40" rx="10" fill="#FFFFFF" stroke="#B9B9B9"/>
-    <text x="34" y="230" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">6월 3일 할 일 입력</text>
+    <text x="34" y="230" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">할 일</text>
     <rect x="218" y="211" width="35" height="28" rx="8" fill="#171717"/>
     <text x="226" y="230" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">추가</text>
     <rect x="20" y="258" width="240" height="43" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <text x="34" y="285" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">미용실 예약</text>
     <text x="229" y="285" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="18" fill="#AAAAAA">×</text>
     <text x="22" y="330" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" font-weight="700" fill="#555555">별도 리스트</text>
-    <rect x="20" y="344" width="171" height="39" rx="12" fill="#EFEDE7"/>
+    <rect x="20" y="344" width="240" height="39" rx="12" fill="#EFEDE7"/>
     <text x="36" y="368" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#333333">장보기</text>
-    <text x="208" y="368" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="14" fill="#555555">↑ ↓</text>
-    <rect x="20" y="391" width="171" height="39" rx="12" fill="#F1F1F1"/>
+    <text x="240" y="369" font-family="Arial, sans-serif" font-size="9" fill="#777777">▼</text>
+    <rect x="20" y="391" width="240" height="39" rx="12" fill="#F1F1F1"/>
     <text x="36" y="415" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#333333">여행 준비</text>
-    <text x="208" y="415" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="14" fill="#555555">↑ ↓</text>
-    <text x="25" y="484" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="11" fill="#777777">선택 날짜에 오늘 화면으로 표시</text>
+    <text x="240" y="416" font-family="Arial, sans-serif" font-size="9" fill="#777777">▲</text>
   </g>
 
   <!-- Context list -->
@@ -109,26 +111,32 @@
     <rect width="280" height="536" rx="30" fill="#FFFFFF" stroke="#171717" stroke-width="2"/>
     <rect x="104" y="13" width="72" height="7" rx="4" fill="#D7D7D7"/>
     <text x="24" y="57" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="21" font-weight="700" fill="#171717">장보기</text>
-    <text x="202" y="56" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#777777">5월 30일</text>
-    <text x="24" y="83" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#777777">목록만 집중해서 확인</text>
+    <rect x="198" y="38" width="31" height="25" rx="8" fill="#171717"/>
+    <text x="204" y="54" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="10" fill="#FFFFFF">등록</text>
+    <rect x="232" y="38" width="31" height="25" rx="8" fill="#F2ECE9"/>
+    <text x="238" y="54" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="10" fill="#6B4E49">삭제</text>
     <rect x="20" y="104" width="240" height="42" rx="10" fill="#FFFFFF" stroke="#B9B9B9"/>
-    <text x="34" y="130" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">살 물건 입력</text>
+    <text x="34" y="130" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#999999">항목</text>
     <rect x="218" y="111" width="35" height="28" rx="8" fill="#171717"/>
     <text x="226" y="130" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#FFFFFF">추가</text>
     <rect x="20" y="165" width="240" height="52" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <rect x="34" y="183" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#333333"/>
     <text x="61" y="195" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">우유</text>
+    <text x="240" y="197" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="229" width="240" height="52" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <rect x="34" y="247" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#333333"/>
     <text x="61" y="259" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">사과</text>
+    <text x="240" y="256" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
+    <text x="240" y="266" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="293" width="240" height="52" rx="12" fill="#F4F4F4"/>
     <rect x="34" y="311" width="15" height="15" rx="4" fill="#D3D3D3"/>
     <path d="M37 318 l4 4 8 -10" stroke="#FFFFFF" stroke-width="2" fill="none"/>
     <text x="61" y="323" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#9A9A9A">주방세제</text>
+    <text x="240" y="320" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
+    <text x="240" y="330" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▼</text>
     <rect x="20" y="357" width="240" height="52" rx="12" fill="#FBFBFB" stroke="#E0E0E0"/>
     <rect x="34" y="375" width="15" height="15" rx="4" fill="#FFFFFF" stroke="#333333"/>
     <text x="61" y="387" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="13" fill="#222222">계란</text>
-    <rect x="20" y="465" width="240" height="34" rx="12" fill="#F2F2F2"/>
-    <text x="98" y="487" font-family="Arial, Apple SD Gothic Neo, sans-serif" font-size="12" fill="#555555">← 오늘로</text>
+    <text x="240" y="389" font-family="Arial, sans-serif" font-size="9" fill="#AAAAAA">▲</text>
   </g>
 </svg>

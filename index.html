@@ -34,7 +34,7 @@
 
           <form id="today-form" class="entry">
             <label class="sr-only" for="today-input">오늘 할 일</label>
-            <input id="today-input" placeholder="오늘 할 일 입력" autocomplete="off" required>
+            <input id="today-input" placeholder="할 일" autocomplete="off" required>
             <button type="submit">추가</button>
           </form>
 
@@ -49,7 +49,6 @@
           <header class="screen-header">
             <div>
               <h2>데일리</h2>
-              <p class="subline">매일 오늘에 자동 생성</p>
             </div>
           </header>
 
@@ -60,7 +59,7 @@
 
           <form id="daily-form" class="entry">
             <label class="sr-only" for="daily-input">반복 루틴</label>
-            <input id="daily-input" placeholder="반복 루틴 입력" autocomplete="off" required>
+            <input id="daily-input" placeholder="루틴" autocomplete="off" required>
             <button type="submit">추가</button>
           </form>
 
@@ -71,9 +70,15 @@
           <header class="screen-header back-header">
             <div>
               <h2>계획</h2>
-              <p class="subline">할 일을 미리 적어두세요</p>
             </div>
-            <button class="back" type="button" data-view="today-view">닫기</button>
+            <div class="plan-header-actions">
+              <button class="back" type="button" data-view="today-view">닫기</button>
+              <button id="today-jump-button" class="back" type="button">오늘</button>
+              <label class="calendar-jump" aria-label="날짜 선택">
+                <span aria-hidden="true">&#128197;</span>
+                <input id="calendar-input" type="date">
+              </label>
+            </div>
           </header>
 
           <div class="month-navigation">
@@ -88,8 +93,8 @@
 
           <form id="plan-form" class="entry">
             <label class="sr-only" for="plan-input">예약할 일</label>
-            <input id="plan-input" placeholder="선택 날짜 할 일 입력" autocomplete="off" required>
-            <button type="submit">추가</button>
+            <input id="plan-input" placeholder="할 일" autocomplete="off" required>
+            <button id="plan-submit-button" type="submit">추가</button>
           </form>
 
           <div id="planned-items" class="items compact"></div>
@@ -97,7 +102,10 @@
           <section class="list-builder">
             <div class="section-title">
               <h3>별도 리스트</h3>
-              <button type="button" id="new-list-button">+ 리스트</button>
+              <div class="section-actions">
+                <button type="button" id="paste-list-button">붙여넣기</button>
+                <button type="button" id="new-list-button">+ 리스트</button>
+              </div>
             </div>
             <div id="planned-lists" class="list-chips"></div>
           </section>
@@ -109,22 +117,22 @@
               <h2 id="list-title">별도 리스트</h2>
               <p id="list-date" class="subline"></p>
             </div>
-            <button id="list-back-button" class="back" type="button">계획으로</button>
+            <button id="close-list-button" class="back list-close" type="button">닫기</button>
+            <div class="header-actions">
+              <button id="save-list-button" class="save" type="button">등록</button>
+              <button id="delete-list-button" class="remove" type="button">삭제</button>
+            </div>
           </header>
 
           <form id="list-title-form" class="list-editor">
             <label class="sr-only" for="list-title-input">리스트 이름</label>
-            <input id="list-title-input" placeholder="예: 장보기, 여행 준비" autocomplete="off" required>
-            <div class="editor-actions">
-              <button type="submit" class="save">등록</button>
-              <button id="delete-list-button" type="button" class="remove">삭제</button>
-            </div>
+            <input id="list-title-input" placeholder="리스트명" autocomplete="off" required>
           </form>
 
           <form id="list-form" class="entry">
             <label class="sr-only" for="list-input">목록 항목</label>
-            <input id="list-input" placeholder="항목 입력" autocomplete="off" required>
-            <button type="submit">추가</button>
+            <input id="list-input" placeholder="항목" autocomplete="off" required>
+            <button id="list-submit-button" type="submit">추가</button>
           </form>
 
           <div id="list-items" class="items"></div>

@@ -55,6 +55,15 @@ const seedState = () => ({
     },
     {
       id: newId(),
+      title: "지난 장보기",
+      date: toDateKey(dayOffset(-2)),
+      items: [
+        { id: newId(), title: "두부", completed: true },
+        { id: newId(), title: "김치", completed: true }
+      ]
+    },
+    {
+      id: newId(),
       title: "여행 준비",
       date: toDateKey(dayOffset(3)),
       items: [
@@ -66,12 +75,31 @@ const seedState = () => ({
   selectedDate: toDateKey(dayOffset(3)),
   openedListId: null,
   listReturnView: "today-view",
+  copiedList: null,
+  samplePastListAdded: true,
   lastDailyDate: toDateKey(dayOffset(0))
 });
 
 const loadState = () => {
   const stored = localStorage.getItem(STORAGE_KEY);
-  return stored ? JSON.parse(stored) : seedState();
+  const loaded = stored ? JSON.parse(stored) : seedState();
+  if (!Object.prototype.hasOwnProperty.call(loaded, "copiedList")) loaded.copiedList = null;
+  if (!loaded.samplePastListAdded) {
+    const hasPastList = loaded.lists?.some((list) => list.date < toDateKey(dayOffset(0)));
+    if (!hasPastList) {
+      loaded.lists.push({
+        id: newId(),
+        title: "지난 장보기",
+        date: toDateKey(dayOffset(-2)),
+        items: [
+          { id: newId(), title: "두부", completed: true },
+          { id: newId(), title: "김치", completed: true }
+        ]
+      });
+    }
+    loaded.samplePastListAdded = true;
+  }
+  return loaded;
 };
 
 let state = loadState();
@@ -91,9 +119,15 @@ const activateView = (viewId) => {
   document.querySelectorAll(".view").forEach((view) => {
     view.classList.toggle("active", view.id === viewId);
   });
+  if (viewId === "today-view") renderToday();
+  if (viewId === "daily-view") renderDaily();
   if (viewId === "plan-view") renderPlan();
   if (viewId === "list-view") renderList();
 };
+
+const todayKey = () => toDateKey(dayOffset(0));
+
+const isPastDate = (dateKey) => dateKey < todayKey();
 
 const createDeleteButton = (onClick) => {
   const button = document.createElement("button");
@@ -101,33 +135,63 @@ const createDeleteButton = (onClick) => {
   button.className = "delete";
   button.textContent = "×";
   button.setAttribute("aria-label", "삭제");
-  button.addEventListener("click", onClick);
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onClick();
+  });
   return button;
 };
 
-const renderTask = (task, onCheck, onDelete) => {
-  const row = document.createElement("label");
+const appendItemActions = (row, deleteButton, orderControls = null) => {
+  if (orderControls) row.append(orderControls);
+  row.append(deleteButton);
+};
+
+const renderTask = (task, onCheck, onDelete, orderControls = null, readOnly = false) => {
+  const row = document.createElement("article");
   row.className = "task";
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.checked = task.completed;
-  checkbox.addEventListener("change", () => onCheck(task.id));
+  checkbox.disabled = readOnly;
+  if (!readOnly) checkbox.addEventListener("change", () => onCheck(task.id));
   const name = document.createElement("span");
   name.className = "task-name";
   name.textContent = task.title;
-  row.append(checkbox, name, createDeleteButton(() => onDelete(task.id)));
+  row.append(checkbox, name);
+  if (!readOnly) appendItemActions(row, createDeleteButton(() => onDelete(task.id)), orderControls);
   return row;
 };
 
-const createMoveButton = (label, text, disabled, onClick) => {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "reorder";
-  button.textContent = text;
-  button.disabled = disabled;
-  button.setAttribute("aria-label", label);
-  button.addEventListener("click", onClick);
-  return button;
+const createOrderControls = (title, index, length, onMove) => {
+  const controls = document.createElement("div");
+  controls.className = "order-controls";
+  if (index > 0) {
+    const up = document.createElement("button");
+    up.type = "button";
+    up.textContent = "▲";
+    up.setAttribute("aria-label", `${title} 위로 이동`);
+    up.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onMove(-1);
+    });
+    controls.append(up);
+  }
+  if (index < length - 1) {
+    const down = document.createElement("button");
+    down.type = "button";
+    down.textContent = "▼";
+    down.setAttribute("aria-label", `${title} 아래로 이동`);
+    down.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onMove(1);
+    });
+    controls.append(down);
+  }
+  return controls;
 };
 
 const reorderVisibleItems = (items, visibleIds, id, distance) => {
@@ -141,13 +205,18 @@ const reorderVisibleItems = (items, visibleIds, id, distance) => {
 };
 
 const renderToday = () => {
-  const dateKey = toDateKey(dayOffset(0));
+  const dateKey = todayKey();
   $("#today-date").textContent = formatDate(dateKey, { month: "long", day: "numeric" });
   const incomplete = state.today.filter((task) => !task.completed);
   $("#today-count").textContent = `남은 일 ${incomplete.length}개`;
   const pendingNode = $("#today-items");
   const doneNode = $("#done-items");
-  pendingNode.replaceChildren(...incomplete.map((task) => renderTask(task, toggleToday, deleteToday)));
+  pendingNode.replaceChildren(...incomplete.map((task, index) => renderTask(
+    task,
+    toggleToday,
+    deleteToday,
+    createOrderControls(task.title, index, incomplete.length, (distance) => moveTodayItem(task.id, distance))
+  )));
   doneNode.replaceChildren(...state.today.filter((task) => task.completed).map((task) => renderTask(task, toggleToday, deleteToday)));
   if (!incomplete.length) pendingNode.innerHTML = '<p class="empty">오늘 할 일을 모두 끝냈어요.</p>';
 
@@ -156,7 +225,7 @@ const renderToday = () => {
     const completeCount = list.items.filter((item) => item.completed).length;
     const card = document.createElement("article");
     card.className = "list-card";
-    card.innerHTML = `<div><p class="card-label">예약 리스트</p><p>${list.title} ${completeCount} / ${list.items.length} 완료</p></div>`;
+    card.innerHTML = `<div><p class="card-label">오늘 리스트</p><p>${list.title} ${completeCount} / ${list.items.length} 완료</p></div>`;
     const openButton = document.createElement("button");
     openButton.type = "button";
     openButton.className = "open-list";
@@ -164,11 +233,12 @@ const renderToday = () => {
     openButton.addEventListener("click", () => openList(list.id, "today-view"));
     const actions = document.createElement("div");
     actions.className = "card-actions";
-    actions.append(
-      createMoveButton(`${list.title} 위로 이동`, "↑", index === 0, () => moveArrivedList(list.id, -1)),
-      createMoveButton(`${list.title} 아래로 이동`, "↓", index === cards.length - 1, () => moveArrivedList(list.id, 1)),
-      openButton
-    );
+    actions.append(openButton, createOrderControls(
+      list.title,
+      index,
+      cards.length,
+      (distance) => moveArrivedList(list.id, distance)
+    ));
     card.append(actions);
     return card;
   }));
@@ -183,6 +253,13 @@ const toggleToday = (id) => {
 
 const deleteToday = (id) => {
   state.today = state.today.filter((task) => task.id !== id);
+  persist();
+  renderToday();
+};
+
+const moveTodayItem = (itemId, distance) => {
+  const ids = state.today.filter((item) => !item.completed).map((item) => item.id);
+  if (!reorderVisibleItems(state.today, ids, itemId, distance)) return;
   persist();
   renderToday();
 };
@@ -206,9 +283,8 @@ const renderDaily = () => {
       renderDaily();
     });
     controls.append(
-      createMoveButton(`${routine.title} 위로 이동`, "↑", index === 0, () => moveDailyItem(routine.id, -1)),
-      createMoveButton(`${routine.title} 아래로 이동`, "↓", index === state.daily.length - 1, () => moveDailyItem(routine.id, 1)),
       toggle,
+      createOrderControls(routine.title, index, state.daily.length, (distance) => moveDailyItem(routine.id, distance)),
       createDeleteButton(() => {
         state.daily = state.daily.filter((item) => item.id !== routine.id);
         persist();
@@ -242,7 +318,6 @@ const chooseMonth = (monthKey) => {
 const changeSelectedDate = (days) => {
   const selected = new Date(`${state.selectedDate}T00:00:00`);
   selected.setDate(selected.getDate() + days);
-  if (!availableMonths().includes(toMonthKey(selected))) return;
   state.selectedDate = toDateKey(selected);
   persist();
   renderPlan();
@@ -255,8 +330,15 @@ const movePlannedList = (listId, distance) => {
   renderPlan();
 };
 
+const movePlannedItem = (itemId, distance) => {
+  const ids = state.planned.filter((item) => item.date === state.selectedDate).map((item) => item.id);
+  if (!reorderVisibleItems(state.planned, ids, itemId, distance)) return;
+  persist();
+  renderPlan();
+};
+
 const moveArrivedList = (listId, distance) => {
-  const today = toDateKey(dayOffset(0));
+  const today = todayKey();
   const ids = state.lists
     .filter((list) => list.date <= today && list.items.some((item) => !item.completed))
     .map((list) => list.id);
@@ -273,26 +355,25 @@ const moveDailyItem = (itemId, distance) => {
 };
 
 const renderPlan = () => {
-  const months = availableMonths();
-  const monthLabels = ["이번 달", "다음 달", "다다음 달"];
-  if (!months.includes(state.selectedDate.slice(0, 7))) {
-    state.selectedDate = toDateKey(dayOffset(0));
-  }
-  $("#month-picker").replaceChildren(...months.map((monthKey, index) => {
+  const months = displayedMonths();
+  const selectedIsPast = isPastDate(state.selectedDate);
+  $("#plan-view").classList.toggle("past-plan", selectedIsPast);
+  $("#month-picker").replaceChildren(...months.map((monthKey) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `month-choice ${state.selectedDate.startsWith(monthKey) ? "active" : ""}`;
-    button.innerHTML = `<strong>${formatDate(`${monthKey}-01`, { month: "long" })}</strong><small>${monthLabels[index]}</small>`;
+    button.textContent = formatDate(`${monthKey}-01`, { month: "long" });
     button.addEventListener("click", () => chooseMonth(monthKey));
     return button;
   }));
 
+  $("#calendar-input").value = state.selectedDate;
   const picker = $("#date-picker");
   picker.replaceChildren(...monthDates(state.selectedDate.slice(0, 7)).map((date) => {
     const dateKey = toDateKey(date);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `date-choice ${dateKey === state.selectedDate ? "active" : ""}`;
+    button.className = `date-choice ${dateKey === state.selectedDate ? "active" : ""} ${isPastDate(dateKey) ? "past" : ""}`;
     button.innerHTML = `<strong>${date.getDate()}</strong><small>${formatDate(dateKey, { weekday: "short" })}</small>`;
     button.addEventListener("click", () => {
       state.selectedDate = dateKey;
@@ -303,21 +384,30 @@ const renderPlan = () => {
   }));
   const activeDate = picker.querySelector(".active");
   if (activeDate) activeDate.scrollIntoView({ block: "nearest", inline: "center" });
-  $("#previous-date").disabled = state.selectedDate === `${months[0]}-01`;
-  $("#next-date").disabled = state.selectedDate === toDateKey(monthDates(months[2]).at(-1));
 
-  $("#plan-input").placeholder = `${formatDate(state.selectedDate, { month: "long", day: "numeric" })} 할 일 입력`;
+  $("#plan-input").placeholder = "할 일";
+  $("#plan-input").disabled = selectedIsPast;
+  $("#plan-submit-button").disabled = selectedIsPast;
+  $("#new-list-button").disabled = selectedIsPast;
+  $("#paste-list-button").disabled = selectedIsPast || !state.copiedList;
   const items = state.planned.filter((item) => item.date === state.selectedDate);
   const itemsNode = $("#planned-items");
-  itemsNode.replaceChildren(...items.map((item) => {
+  itemsNode.replaceChildren(...items.map((item, index) => {
     const row = document.createElement("article");
     row.className = "task";
     row.innerHTML = `<span class="task-name">${item.title}</span>`;
-    row.append(createDeleteButton(() => {
-      state.planned = state.planned.filter((task) => task.id !== item.id);
-      persist();
-      renderPlan();
-    }));
+    if (!selectedIsPast) {
+      appendItemActions(row, createDeleteButton(() => {
+        state.planned = state.planned.filter((task) => task.id !== item.id);
+        persist();
+        renderPlan();
+      }), createOrderControls(
+        item.title,
+        index,
+        items.length,
+        (distance) => movePlannedItem(item.id, distance)
+      ));
+    }
     return row;
   }));
   if (!items.length) itemsNode.innerHTML = '<p class="empty">이 날짜에 예약된 일반 할 일이 없어요.</p>';
@@ -331,23 +421,29 @@ const renderPlan = () => {
     button.className = "chip";
     button.textContent = list.title;
     button.addEventListener("click", () => openList(list.id, "plan-view"));
-    const up = document.createElement("button");
-    up.type = "button";
-    up.className = "reorder";
-    up.textContent = "↑";
-    up.disabled = index === 0;
-    up.setAttribute("aria-label", `${list.title} 위로 이동`);
-    up.addEventListener("click", () => movePlannedList(list.id, -1));
-    const down = document.createElement("button");
-    down.type = "button";
-    down.className = "reorder";
-    down.textContent = "↓";
-    down.disabled = index === lists.length - 1;
-    down.setAttribute("aria-label", `${list.title} 아래로 이동`);
-    down.addEventListener("click", () => movePlannedList(list.id, 1));
-    row.append(button, up, down);
+    row.append(button);
+    if (!selectedIsPast) {
+      const copyButton = document.createElement("button");
+      copyButton.type = "button";
+      copyButton.className = "copy-list";
+      copyButton.textContent = "복사";
+      copyButton.addEventListener("click", () => copyList(list.id));
+      row.append(copyButton, createOrderControls(
+        list.title,
+        index,
+        lists.length,
+        (distance) => movePlannedList(list.id, distance)
+      ));
+    }
     return row;
   }));
+};
+
+const displayedMonths = () => {
+  const baseMonths = availableMonths();
+  const selectedMonth = state.selectedDate.slice(0, 7);
+  if (baseMonths.includes(selectedMonth)) return baseMonths;
+  return [0, 1, 2].map((offset) => shiftMonth(selectedMonth, offset));
 };
 
 const openList = (id, returnView) => {
@@ -376,29 +472,51 @@ const activeList = () => {
   return state.lists.find((item) => item.id === state.openedListId) || state.lists[0];
 };
 
+const syncOpenListTitle = () => {
+  const list = activeList();
+  const title = $("#list-title-input").value.trim();
+  if (title) list.title = title;
+  return list;
+};
+
 const renderList = () => {
   const list = activeList();
   if (!editingDraft) state.openedListId = list.id;
+  const isTodayList = state.listReturnView === "today-view" && !editingDraft;
+  const readOnly = !editingDraft && isPastDate(list.date);
+  $("#list-view").classList.toggle("today-list-mode", isTodayList);
+  $("#list-view").classList.toggle("readonly-list-mode", readOnly);
   $("#list-title").textContent = list.title || "새 리스트";
   $("#list-date").textContent = formatDate(list.date, { month: "long", day: "numeric", weekday: "short" });
   $("#list-title-input").value = list.title;
-  $("#list-input").placeholder = `${list.title || "리스트"} 항목 입력`;
-  const backButton = $("#list-back-button");
-  if (state.listReturnView === "plan-view") {
-    backButton.textContent = `${formatDate(list.date, { month: "numeric", day: "numeric" })} 계획으로`;
-  } else {
-    backButton.textContent = "오늘로";
-  }
-  $("#list-items").replaceChildren(...list.items.map((item) => renderTask(item, (id) => {
+  $("#list-title-input").disabled = readOnly;
+  $("#list-input").placeholder = "항목";
+  $("#list-input").disabled = readOnly;
+  $("#list-submit-button").disabled = readOnly;
+  $("#list-items").replaceChildren(...list.items.map((item, index) => renderTask(item, (id) => {
+    if (readOnly) return;
     const target = list.items.find((entry) => entry.id === id);
     target.completed = !target.completed;
     if (!editingDraft) persist();
     renderList();
   }, (id) => {
+    if (readOnly) return;
     list.items = list.items.filter((entry) => entry.id !== id);
     if (!editingDraft) persist();
     renderList();
-  })));
+  }, readOnly ? null : createOrderControls(
+    item.title,
+    index,
+    list.items.length,
+    (distance) => moveListItem(item.id, distance)
+  ), readOnly)));
+};
+
+const moveListItem = (itemId, distance) => {
+  const list = activeList();
+  if (!reorderVisibleItems(list.items, list.items.map((item) => item.id), itemId, distance)) return;
+  if (!editingDraft) persist();
+  renderList();
 };
 
 const processDueItems = () => {
@@ -443,7 +561,9 @@ document.addEventListener("click", (event) => {
 $("#today-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#today-input");
-  state.today.unshift({ id: newId(), title: input.value.trim(), completed: false });
+  const title = input.value.trim();
+  if (!title) return;
+  state.today.unshift({ id: newId(), title, completed: false });
   input.value = "";
   persist();
   renderToday();
@@ -452,7 +572,9 @@ $("#today-form").addEventListener("submit", (event) => {
 $("#daily-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#daily-input");
-  state.daily.unshift({ id: newId(), title: input.value.trim(), active: true });
+  const title = input.value.trim();
+  if (!title) return;
+  state.daily.unshift({ id: newId(), title, active: true });
   input.value = "";
   persist();
   renderDaily();
@@ -461,7 +583,9 @@ $("#daily-form").addEventListener("submit", (event) => {
 $("#plan-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#plan-input");
-  state.planned.push({ id: newId(), date: state.selectedDate, title: input.value.trim() });
+  const title = input.value.trim();
+  if (!title) return;
+  state.planned.push({ id: newId(), date: state.selectedDate, title });
   input.value = "";
   persist();
   renderPlan();
@@ -469,16 +593,57 @@ $("#plan-form").addEventListener("submit", (event) => {
 
 $("#previous-date").addEventListener("click", () => changeSelectedDate(-1));
 $("#next-date").addEventListener("click", () => changeSelectedDate(1));
+$("#today-jump-button").addEventListener("click", () => {
+  state.selectedDate = todayKey();
+  persist();
+  renderPlan();
+});
+$("#calendar-input").addEventListener("change", (event) => {
+  if (!event.target.value) return;
+  state.selectedDate = event.target.value;
+  persist();
+  renderPlan();
+});
+
+const copyList = (listId) => {
+  const list = state.lists.find((item) => item.id === listId);
+  if (!list) return;
+  state.copiedList = {
+    title: list.title,
+    items: list.items.map((item) => ({ title: item.title }))
+  };
+  persist();
+  renderPlan();
+};
+
+const pasteCopiedList = () => {
+  if (!state.copiedList || isPastDate(state.selectedDate)) return;
+  state.lists.push({
+    id: newId(),
+    title: state.copiedList.title,
+    date: state.selectedDate,
+    items: state.copiedList.items.map((item) => ({
+      id: newId(),
+      title: item.title,
+      completed: false
+    }))
+  });
+  persist();
+  renderPlan();
+};
 
 $("#new-list-button").addEventListener("click", () => {
+  if (isPastDate(state.selectedDate)) return;
   openNewList();
   $("#list-title-input").focus();
 });
 
+$("#paste-list-button").addEventListener("click", pasteCopiedList);
+
 $("#list-title-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  const list = activeList();
-  list.title = $("#list-title-input").value.trim();
+  const list = syncOpenListTitle();
+  if (!list.title.trim()) return;
   if (editingDraft) {
     state.lists.push(list);
     state.openedListId = list.id;
@@ -489,7 +654,9 @@ $("#list-title-form").addEventListener("submit", (event) => {
   activateView(state.listReturnView || "plan-view");
 });
 
-$("#list-back-button").addEventListener("click", () => {
+$("#save-list-button").addEventListener("click", () => $("#list-title-form").requestSubmit());
+
+$("#close-list-button").addEventListener("click", () => {
   draftList = null;
   editingDraft = false;
   activateView(state.listReturnView || "today-view");
@@ -509,8 +676,10 @@ $("#delete-list-button").addEventListener("click", () => {
 $("#list-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#list-input");
-  const list = activeList();
-  list.items.push({ id: newId(), title: input.value.trim(), completed: false });
+  const list = syncOpenListTitle();
+  const title = input.value.trim();
+  if (!title) return;
+  list.items.push({ id: newId(), title, completed: false });
   input.value = "";
   if (!editingDraft) persist();
   renderList();

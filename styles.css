@@ -180,8 +180,12 @@ button {
 }
 
 .entry button,
-.back {
-  padding: 10px 12px;
+.back,
+.list-card .open-list,
+.header-actions button {
+  min-width: 48px;
+  height: 36px;
+  padding: 0 12px;
   border-radius: 10px;
   color: #fff;
   background: var(--ink);
@@ -238,17 +242,9 @@ button {
 }
 
 .delete {
-  visibility: hidden;
   color: #99948d;
   background: none;
   font-size: 19px;
-}
-
-.task:hover .delete,
-.task:focus-within .delete,
-.daily-task:hover .delete,
-.daily-task:focus-within .delete {
-  visibility: visible;
 }
 
 .completed {
@@ -286,22 +282,13 @@ button {
 .card-actions {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .card-label {
   margin-bottom: 5px !important;
   color: #756b59;
   font-size: 11px;
-  font-weight: 700;
-}
-
-.list-card .open-list {
-  padding: 10px 12px;
-  border-radius: 10px;
-  color: #fff;
-  background: var(--ink);
-  font-size: 13px;
   font-weight: 700;
 }
 
@@ -349,24 +336,29 @@ button {
   font-weight: 600;
 }
 
-.month-choice strong,
-.month-choice small {
-  display: block;
-}
-
-.month-choice small {
-  margin-top: 3px;
-  color: #88837d;
-  font-size: 10px;
-}
-
 .month-choice.active {
   color: #fff;
   background: var(--ink);
 }
 
-.month-choice.active small {
-  color: #dedbd5;
+.calendar-jump {
+  position: relative;
+  display: grid;
+  min-width: 48px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.calendar-jump input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .arrow {
@@ -426,6 +418,27 @@ button {
   background: var(--ink);
 }
 
+.date-choice.past {
+  color: #aaa39a;
+  background: #ece8e1;
+}
+
+.date-choice.past.active {
+  color: #6f6860;
+  background: #ddd6cc;
+}
+
+.past-plan .entry,
+.past-plan .list-builder {
+  opacity: 0.62;
+}
+
+.past-plan button:disabled,
+.entry button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
 .compact {
   min-height: 68px;
 }
@@ -441,16 +454,29 @@ button {
   margin-bottom: 12px;
 }
 
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .section-title h3 {
   margin: 0;
   font-size: 15px;
 }
 
 .section-title button {
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 10px;
   color: #5e5b55;
-  background: transparent;
+  background: var(--surface);
   font-size: 13px;
   font-weight: 600;
+}
+
+.section-title button:disabled {
+  cursor: default;
+  opacity: 0.4;
 }
 
 .list-chips {
@@ -475,22 +501,42 @@ button {
   text-align: left;
 }
 
+.copy-list {
+  min-width: 44px;
+  height: 34px;
+  border-radius: 10px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .chip.arrived {
   background: var(--accent-surface);
 }
 
-.reorder {
-  width: 34px;
-  padding: 10px 0;
-  border-radius: 10px;
-  color: #57534e;
-  background: var(--surface);
-  font-size: 14px;
+.order-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  width: 22px;
+  min-height: 34px;
+  margin-left: auto;
 }
 
-.reorder:disabled {
-  cursor: default;
-  opacity: 0.3;
+.order-controls:empty {
+  display: none;
+}
+
+.order-controls button {
+  width: 22px;
+  height: 16px;
+  padding: 0;
+  color: #b8b2aa;
+  background: transparent;
+  font-size: 14px;
+  line-height: 16px;
 }
 
 .list-editor {
@@ -507,25 +553,23 @@ button {
   font-size: 14px;
 }
 
-.editor-actions {
+.header-actions {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.editor-actions button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
+.header-actions button {
+  width: 48px;
+  font-size: 12px;
 }
 
-.editor-actions .save {
+.header-actions .save {
   color: #fff;
   background: var(--ink);
 }
 
-.editor-actions .remove {
+.header-actions .remove {
   color: #6b4e49;
   background: #f2ece9;
 }
@@ -537,7 +581,41 @@ button {
 .daily-actions {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
+}
+
+.daily-actions .order-controls {
+  margin-left: 0;
+}
+
+.plan-header-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.plan-header-actions .back,
+.plan-header-actions .calendar-jump {
+  min-width: 48px;
+  height: 36px;
+}
+
+.list-close {
+  display: none;
+}
+
+.today-list-mode .header-actions,
+.today-list-mode .list-editor,
+.readonly-list-mode .header-actions,
+.readonly-list-mode .list-editor,
+.readonly-list-mode .entry {
+  display: none;
+}
+
+.today-list-mode .list-close,
+.readonly-list-mode .list-close {
+  display: inline-grid;
+  place-items: center;
 }
 
 .switch {
