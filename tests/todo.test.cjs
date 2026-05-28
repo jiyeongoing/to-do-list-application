@@ -86,6 +86,15 @@ class FakeElement {
     }
   }
 
+  closest(selector) {
+    let current = this;
+    while (current) {
+      if (matches(current, selector)) return current;
+      current = current.parentElement;
+    }
+    return null;
+  }
+
   focus() {}
 
   scrollIntoView() {}
@@ -343,6 +352,20 @@ test("날짜 이동은 캘린더와 오늘 버튼을 모두 지원한다", () =>
 
     document.querySelector("#today-jump-button").dispatchEvent({ type: "click" });
     assert.equal(state.selectedDate, todayKey());
+  `);
+});
+
+test("계획하기 버튼으로 들어가면 날짜가 오늘로 초기화된다", () => {
+  runAppTest(`
+    const planButton = document.createElement("button");
+    planButton.setAttribute("data-view", "plan-view");
+    document.append(planButton);
+
+    state.selectedDate = "2026-07-15";
+    document.dispatchEvent({ type: "click", target: planButton });
+
+    assert.equal(state.selectedDate, todayKey());
+    assert.equal(document.querySelector("#plan-view").classList.contains("active"), true);
   `);
 });
 

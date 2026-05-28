@@ -127,6 +127,12 @@ const activateView = (viewId) => {
 
 const todayKey = () => toDateKey(dayOffset(0));
 
+const openPlanForToday = () => {
+  state.selectedDate = todayKey();
+  persist();
+  activateView("plan-view");
+};
+
 const isPastDate = (dateKey) => dateKey < todayKey();
 
 const createDeleteButton = (onClick) => {
@@ -580,7 +586,7 @@ $(".phone").addEventListener("touchend", (event) => {
   const distance = event.changedTouches[0].clientX - touchStartX;
   const activeView = $(".view.active").id;
   if (distance < -55 && (activeView === "today-view" || activeView === "daily-view")) {
-    activateView("plan-view");
+    openPlanForToday();
   }
   if (distance > 55 && activeView === "plan-view") {
     activateView("today-view");
@@ -590,7 +596,12 @@ $(".phone").addEventListener("touchend", (event) => {
 
 document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-view]");
-  if (target) activateView(target.dataset.view);
+  if (!target) return;
+  if (target.dataset.view === "plan-view") {
+    openPlanForToday();
+    return;
+  }
+  activateView(target.dataset.view);
 });
 
 $("#today-form").addEventListener("submit", (event) => {
@@ -743,6 +754,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=3").catch(() => {});
   });
 }
