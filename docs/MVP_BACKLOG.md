@@ -43,7 +43,15 @@
 | --- | --- | --- | --- | --- |
 |  |  |  |  |  |
 
-## 5. 다음 버전 후보
+## 5. 테스트 기록
+
+| 구분 | 검증 내용 | 실행 방법 |
+| --- | --- | --- |
+| TDD | 주요 투두 동작 8개 케이스 검증 | `node --test tests/todo.test.cjs` |
+| 정적 검사 | JavaScript 문법 오류 확인 | `node --check app.js` |
+| 문서 검사 | SVG 와이어프레임 XML 확인 | `xmllint --noout docs/assets/wireframe-overview.svg` |
+
+## 6. 다음 버전 후보
 
 | 후보 | 검토 조건 |
 | --- | --- |

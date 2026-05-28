@@ -1,0 +1,8 @@
+{
+  "name": "swipe-todo-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/todo.test.cjs"
+  }
+}
