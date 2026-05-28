@@ -304,6 +304,37 @@ test("오늘 리스트 완료 수는 항목 추가 후 다시 계산된다", () 
   `);
 });
 
+test("계획에서 오늘 날짜를 선택하면 오늘 할 일을 보여준다", () => {
+  runAppTest(`
+    state.selectedDate = todayKey();
+    state.today = [
+      { id: "today-a", title: "오늘 A", completed: false },
+      { id: "today-b", title: "완료 B", completed: true }
+    ];
+    state.planned = [];
+
+    renderPlan();
+
+    const rows = document.querySelector("#planned-items").children;
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].children[1].textContent, "오늘 A");
+  `);
+});
+
+test("계획에서 오늘 날짜에 추가한 할 일은 오늘 목록에 저장된다", () => {
+  runAppTest(`
+    state.selectedDate = todayKey();
+    state.today = [];
+    state.planned = [];
+
+    document.querySelector("#plan-input").value = "오늘 회의";
+    document.querySelector("#plan-form").requestSubmit();
+
+    assert.equal(state.today[0].title, "오늘 회의");
+    assert.equal(state.planned.length, 0);
+  `);
+});
+
 test("날짜 이동은 캘린더와 오늘 버튼을 모두 지원한다", () => {
   runAppTest(`
     document.querySelector("#calendar-input").value = "2026-07-15";

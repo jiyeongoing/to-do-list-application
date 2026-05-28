@@ -264,6 +264,26 @@ const moveTodayItem = (itemId, distance) => {
   renderToday();
 };
 
+const togglePlanToday = (id) => {
+  const item = state.today.find((task) => task.id === id);
+  item.completed = !item.completed;
+  persist();
+  renderPlan();
+};
+
+const deletePlanToday = (id) => {
+  state.today = state.today.filter((task) => task.id !== id);
+  persist();
+  renderPlan();
+};
+
+const movePlanTodayItem = (itemId, distance) => {
+  const ids = state.today.filter((item) => !item.completed).map((item) => item.id);
+  if (!reorderVisibleItems(state.today, ids, itemId, distance)) return;
+  persist();
+  renderPlan();
+};
+
 const renderDaily = () => {
   const root = $("#daily-items");
   root.replaceChildren(...state.daily.map((routine, index) => {
@@ -357,6 +377,7 @@ const moveDailyItem = (itemId, distance) => {
 const renderPlan = () => {
   const months = displayedMonths();
   const selectedIsPast = isPastDate(state.selectedDate);
+  const selectedIsToday = state.selectedDate === todayKey();
   $("#plan-view").classList.toggle("past-plan", selectedIsPast);
   $("#month-picker").replaceChildren(...months.map((monthKey) => {
     const button = document.createElement("button");
@@ -390,9 +411,19 @@ const renderPlan = () => {
   $("#plan-submit-button").disabled = selectedIsPast;
   $("#new-list-button").disabled = selectedIsPast;
   $("#paste-list-button").disabled = selectedIsPast || !state.copiedList;
-  const items = state.planned.filter((item) => item.date === state.selectedDate);
+  const items = selectedIsToday
+    ? state.today.filter((item) => !item.completed)
+    : state.planned.filter((item) => item.date === state.selectedDate);
   const itemsNode = $("#planned-items");
   itemsNode.replaceChildren(...items.map((item, index) => {
+    if (selectedIsToday) {
+      return renderTask(
+        item,
+        togglePlanToday,
+        deletePlanToday,
+        createOrderControls(item.title, index, items.length, (distance) => movePlanTodayItem(item.id, distance))
+      );
+    }
     const row = document.createElement("article");
     row.className = "task";
     row.innerHTML = `<span class="task-name">${item.title}</span>`;
@@ -410,7 +441,11 @@ const renderPlan = () => {
     }
     return row;
   }));
-  if (!items.length) itemsNode.innerHTML = '<p class="empty">이 날짜에 예약된 일반 할 일이 없어요.</p>';
+  if (!items.length) {
+    itemsNode.innerHTML = selectedIsToday
+      ? '<p class="empty">오늘 할 일이 없어요.</p>'
+      : '<p class="empty">이 날짜에 예약된 일반 할 일이 없어요.</p>';
+  }
 
   const lists = state.lists.filter((list) => list.date === state.selectedDate);
   $("#planned-lists").replaceChildren(...lists.map((list, index) => {
@@ -585,7 +620,11 @@ $("#plan-form").addEventListener("submit", (event) => {
   const input = $("#plan-input");
   const title = input.value.trim();
   if (!title) return;
-  state.planned.push({ id: newId(), date: state.selectedDate, title });
+  if (state.selectedDate === todayKey()) {
+    state.today.unshift({ id: newId(), title, completed: false });
+  } else {
+    state.planned.push({ id: newId(), date: state.selectedDate, title });
+  }
   input.value = "";
   persist();
   renderPlan();
