@@ -3,6 +3,11 @@
 > 오늘 할 일과 매일 반복할 루틴은 가볍게 확인하고,
 > 미래 일정과 목적별 준비 목록은 날짜에 미리 적어두는 모바일 PWA 투두리스트
 
+## Links
+
+- Demo: https://jiyeongoing.github.io/to-do-list-application/
+- Repository: https://github.com/jiyeongoing/to-do-list-application
+
 ## Portfolio Highlights
 
 - iPhone-first PWA 투두리스트 기획 및 클릭 가능한 프로토타입 구현
