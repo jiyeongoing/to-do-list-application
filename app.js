@@ -429,7 +429,7 @@ const renderPlan = () => {
     return button;
   }));
   const activeDate = picker.querySelector(".active");
-  if (activeDate) activeDate.scrollIntoView({ block: "nearest", inline: "center" });
+  if (activeDate) activeDate.scrollIntoView({ block: "nearest", inline: "nearest" });
 
   $("#plan-input").placeholder = "할 일";
   $("#plan-input").disabled = selectedIsPast;
@@ -604,8 +604,11 @@ $(".phone").addEventListener("touchend", (event) => {
   if (touchStartX === null) return;
   const distance = event.changedTouches[0].clientX - touchStartX;
   const activeView = $(".view.active").id;
-  if (distance < -55 && (activeView === "today-view" || activeView === "daily-view")) {
+  if (distance > 55 && (activeView === "today-view" || activeView === "daily-view")) {
     openPlanForToday();
+  }
+  if (distance < -55 && activeView === "plan-view") {
+    activateView("today-view");
   }
   touchStartX = null;
 }, { passive: true });
@@ -636,7 +639,7 @@ $("#daily-form").addEventListener("submit", (event) => {
   const input = $("#daily-input");
   const title = input.value.trim();
   if (!title) return;
-  state.daily.unshift({ id: newId(), title, active: true });
+  state.daily.unshift({ id: newId(), title, active: false });
   input.value = "";
   persist();
   renderDaily();
