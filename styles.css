@@ -21,7 +21,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--canvas);
+  background: var(--paper);
 }
 
 button,
@@ -38,51 +38,18 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
   min-height: 100vh;
-  padding: 26px 18px 34px;
-}
-
-.brand {
-  width: min(100%, 400px);
-}
-
-.brand-kicker {
-  margin: 0 0 6px;
-  color: var(--soft-ink);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.brand h1 {
-  margin: 0;
-  font-size: 30px;
-  letter-spacing: -0.04em;
+  background: var(--paper);
 }
 
 .phone {
   position: relative;
-  width: min(100%, 400px);
-  min-height: 756px;
-  overflow: hidden;
-  border: 2px solid var(--ink);
-  border-radius: 42px;
+  flex: 1;
+  width: min(100%, 560px);
+  min-height: calc(100vh - 82px);
+  overflow-x: hidden;
   background: var(--paper);
-  padding: 46px 20px 24px;
-  box-shadow: 0 16px 36px rgb(19 18 15 / 7%);
-}
-
-.notch {
-  position: absolute;
-  left: 50%;
-  top: 16px;
-  width: 76px;
-  height: 7px;
-  transform: translateX(-50%);
-  border-radius: 99px;
-  background: #d6d4d1;
+  padding: calc(22px + env(safe-area-inset-top)) 18px 24px;
 }
 
 .view {
@@ -697,21 +664,10 @@ button {
 }
 
 @media (max-width: 430px) {
-  .prototype {
-    padding: 0;
-  }
-
-  .brand {
-    display: none;
-  }
-
   .phone {
     width: 100%;
     min-height: calc(100vh - 82px);
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    padding-top: calc(52px + env(safe-area-inset-top));
+    padding-top: calc(22px + env(safe-area-inset-top));
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
   }
 
