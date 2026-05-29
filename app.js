@@ -42,8 +42,8 @@ const createEmptyState = () => ({
 
 const sampleState = () => ({
   today: [
-    { id: newId(), title: "서류 제출하기", completed: false },
-    { id: newId(), title: "영양제 먹기", completed: true }
+    { id: newId(), date: toDateKey(dayOffset(0)), title: "서류 제출하기", completed: false },
+    { id: newId(), date: toDateKey(dayOffset(0)), title: "영양제 먹기", completed: true }
   ],
   daily: [
     { id: newId(), title: "영양제 먹기", active: true },
@@ -92,10 +92,19 @@ const sampleState = () => ({
   lastDailyDate: toDateKey(dayOffset(0))
 });
 
+const normalizeTodayTasks = (loaded) => {
+  const fallbackDate = loaded?.lastDailyDate || toDateKey(dayOffset(0));
+  if (!Array.isArray(loaded?.today)) return [];
+  return loaded.today.map((task) => ({
+    ...task,
+    date: task.date || fallbackDate
+  }));
+};
+
 const normalizeState = (loaded) => ({
   ...createEmptyState(),
   ...loaded,
-  today: Array.isArray(loaded?.today) ? loaded.today : [],
+  today: normalizeTodayTasks(loaded),
   daily: Array.isArray(loaded?.daily) ? loaded.daily : [],
   planned: Array.isArray(loaded?.planned) ? loaded.planned : [],
   lists: Array.isArray(loaded?.lists) ? loaded.lists : [],
@@ -145,6 +154,8 @@ const refreshActiveView = () => {
 };
 
 const todayKey = () => toDateKey(dayOffset(0));
+
+const tasksForDate = (dateKey) => state.today.filter((task) => task.date === dateKey);
 
 const openPlanForToday = () => {
   state.selectedDate = todayKey();
@@ -232,7 +243,8 @@ const reorderVisibleItems = (items, visibleIds, id, distance) => {
 const renderToday = () => {
   const dateKey = todayKey();
   $("#today-date").textContent = formatDate(dateKey, { month: "long", day: "numeric" });
-  const incomplete = state.today.filter((task) => !task.completed);
+  const todayTasks = tasksForDate(dateKey);
+  const incomplete = todayTasks.filter((task) => !task.completed);
   $("#today-count").textContent = `남은 일 ${incomplete.length}개`;
   const pendingNode = $("#today-items");
   const doneNode = $("#done-items");
@@ -242,7 +254,7 @@ const renderToday = () => {
     deleteToday,
     createOrderControls(task.title, index, incomplete.length, (distance) => moveTodayItem(task.id, distance))
   )));
-  doneNode.replaceChildren(...state.today.filter((task) => task.completed).map((task) => renderTask(task, toggleToday, deleteToday)));
+  doneNode.replaceChildren(...todayTasks.filter((task) => task.completed).map((task) => renderTask(task, toggleToday, deleteToday)));
   if (!incomplete.length) pendingNode.innerHTML = '<p class="empty">오늘 할 일을 모두 끝냈어요.</p>';
 
   const cards = state.lists.filter((list) => list.date <= dateKey && list.items.some((item) => !item.completed));
@@ -283,7 +295,7 @@ const deleteToday = (id) => {
 };
 
 const moveTodayItem = (itemId, distance) => {
-  const ids = state.today.filter((item) => !item.completed).map((item) => item.id);
+  const ids = tasksForDate(todayKey()).filter((item) => !item.completed).map((item) => item.id);
   if (!reorderVisibleItems(state.today, ids, itemId, distance)) return;
   persist();
   renderToday();
@@ -303,7 +315,7 @@ const deletePlanToday = (id) => {
 };
 
 const movePlanTodayItem = (itemId, distance) => {
-  const ids = state.today.filter((item) => !item.completed).map((item) => item.id);
+  const ids = tasksForDate(state.selectedDate).filter((item) => !item.completed).map((item) => item.id);
   if (!reorderVisibleItems(state.today, ids, itemId, distance)) return;
   persist();
   renderPlan();
@@ -436,17 +448,19 @@ const renderPlan = () => {
   $("#plan-submit-button").disabled = selectedIsPast;
   $("#new-list-button").disabled = selectedIsPast;
   $("#paste-list-button").disabled = selectedIsPast || !state.copiedList;
-  const items = selectedIsToday
-    ? state.today
+  const selectedHasArrived = state.selectedDate <= todayKey();
+  const items = selectedHasArrived
+    ? tasksForDate(state.selectedDate)
     : state.planned.filter((item) => item.date === state.selectedDate);
   const itemsNode = $("#planned-items");
   itemsNode.replaceChildren(...items.map((item, index) => {
-    if (selectedIsToday) {
+    if (selectedHasArrived) {
       return renderTask(
         item,
         togglePlanToday,
         deletePlanToday,
-        createOrderControls(item.title, index, items.length, (distance) => movePlanTodayItem(item.id, distance))
+        selectedIsToday ? createOrderControls(item.title, index, items.length, (distance) => movePlanTodayItem(item.id, distance)) : null,
+        selectedIsPast
       );
     }
     const row = document.createElement("article");
@@ -467,8 +481,8 @@ const renderPlan = () => {
     return row;
   }));
   if (!items.length) {
-    itemsNode.innerHTML = selectedIsToday
-      ? '<p class="empty">오늘 할 일이 없어요.</p>'
+    itemsNode.innerHTML = selectedHasArrived
+      ? '<p class="empty">이 날짜에 등록된 할 일이 없어요.</p>'
       : '<p class="empty">이 날짜에 예약된 일반 할 일이 없어요.</p>';
   }
 
@@ -583,12 +597,21 @@ const processDueItems = () => {
   const today = toDateKey(dayOffset(0));
   const due = state.planned.filter((item) => item.date <= today);
   due.forEach((item) => {
-    state.today.push({ id: newId(), title: item.title, completed: false });
+    state.today.push({ id: newId(), date: item.date, title: item.title, completed: false });
   });
   state.planned = state.planned.filter((item) => item.date > today);
   if (state.lastDailyDate !== today) {
     state.daily.filter((item) => item.active).forEach((item) => {
-      state.today.push({ id: newId(), title: item.title, completed: false });
+      const alreadyCreated = state.today.some((task) => task.date === today && task.routineId === item.id);
+      if (!alreadyCreated) {
+        state.today.push({
+          id: newId(),
+          date: today,
+          title: item.title,
+          completed: false,
+          routineId: item.id
+        });
+      }
     });
     state.lastDailyDate = today;
   }
@@ -639,7 +662,7 @@ $("#today-form").addEventListener("submit", (event) => {
   const input = $("#today-input");
   const title = input.value.trim();
   if (!title) return;
-  state.today.unshift({ id: newId(), title, completed: false });
+  state.today.unshift({ id: newId(), date: todayKey(), title, completed: false });
   input.value = "";
   persist();
   renderToday();
@@ -662,7 +685,7 @@ $("#plan-form").addEventListener("submit", (event) => {
   const title = input.value.trim();
   if (!title) return;
   if (state.selectedDate === todayKey()) {
-    state.today.unshift({ id: newId(), title, completed: false });
+    state.today.unshift({ id: newId(), date: state.selectedDate, title, completed: false });
   } else {
     state.planned.push({ id: newId(), date: state.selectedDate, title });
   }
@@ -826,6 +849,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=10").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=11").catch(() => {});
   });
 }

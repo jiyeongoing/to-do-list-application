@@ -244,9 +244,9 @@ const runAppTest = (body) => {
 test("오늘 할 일은 미완료 항목 안에서 순서를 변경한다", () => {
   runAppTest(`
     state.today = [
-      { id: "today-a", title: "오늘 A", completed: false },
-      { id: "today-b", title: "오늘 B", completed: false },
-      { id: "today-c", title: "완료 C", completed: true }
+      { id: "today-a", date: todayKey(), title: "오늘 A", completed: false },
+      { id: "today-b", date: todayKey(), title: "오늘 B", completed: false },
+      { id: "today-c", date: todayKey(), title: "완료 C", completed: true }
     ];
     renderToday();
     moveTodayItem("today-b", -1);
@@ -355,8 +355,8 @@ test("계획에서 오늘 날짜를 선택하면 오늘 할 일을 보여준다"
   runAppTest(`
     state.selectedDate = todayKey();
     state.today = [
-      { id: "today-a", title: "오늘 A", completed: false },
-      { id: "today-b", title: "완료 B", completed: true }
+      { id: "today-a", date: todayKey(), title: "오늘 A", completed: false },
+      { id: "today-b", date: todayKey(), title: "완료 B", completed: true }
     ];
     state.planned = [];
 
@@ -366,6 +366,52 @@ test("계획에서 오늘 날짜를 선택하면 오늘 할 일을 보여준다"
     assert.equal(rows.length, 2);
     assert.equal(rows[0].children[1].textContent, "오늘 A");
     assert.equal(rows[1].children[1].textContent, "완료 B");
+  `);
+});
+
+test("오늘 화면과 계획 화면은 할 일을 날짜별로 분리해서 보여준다", () => {
+  runAppTest(`
+    const yesterday = toDateKey(dayOffset(-1));
+    const today = todayKey();
+    state.today = [
+      { id: "old-task", date: yesterday, title: "어제 할 일", completed: false },
+      { id: "today-task", date: today, title: "오늘 할 일", completed: false }
+    ];
+
+    renderToday();
+    assert.equal(document.querySelector("#today-items").children.length, 1);
+    assert.equal(document.querySelector("#today-items").children[0].children[1].textContent, "오늘 할 일");
+
+    state.selectedDate = yesterday;
+    renderPlan();
+    assert.equal(document.querySelector("#planned-items").children.length, 1);
+    assert.equal(document.querySelector("#planned-items").children[0].children[1].textContent, "어제 할 일");
+  `);
+});
+
+test("날짜가 바뀌면 활성 데일리와 도래한 계획은 해당 날짜 할 일로 생성된다", () => {
+  runAppTest(`
+    const yesterday = toDateKey(dayOffset(-1));
+    const today = todayKey();
+    const tomorrow = toDateKey(dayOffset(1));
+    state.today = [];
+    state.daily = [{ id: "daily-a", title: "물 마시기", active: true }];
+    state.planned = [
+      { id: "plan-old", date: yesterday, title: "어제 예약" },
+      { id: "plan-today", date: today, title: "오늘 예약" },
+      { id: "plan-tomorrow", date: tomorrow, title: "내일 예약" }
+    ];
+    state.lastDailyDate = yesterday;
+
+    processDueItems();
+
+    assert.deepEqual(state.planned.map((item) => item.id), ["plan-tomorrow"]);
+    assert.ok(state.today.some((item) => item.title === "어제 예약" && item.date === yesterday));
+    assert.ok(state.today.some((item) => item.title === "오늘 예약" && item.date === today));
+    assert.ok(state.today.some((item) => item.title === "물 마시기" && item.date === today && item.completed === false));
+
+    renderToday();
+    assert.equal(document.querySelector("#today-count").textContent, "남은 일 2개");
   `);
 });
 
