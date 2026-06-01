@@ -1,4 +1,6 @@
 const STORAGE_KEY = "swipe-todo-prototype-v1";
+const ACCOUNT_KEY = "swipe-todo-account-v1";
+const ACCOUNT_STORAGE_PREFIX = "swipe-todo-account-state-";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -111,8 +113,27 @@ const normalizeState = (loaded) => ({
   copiedList: Object.prototype.hasOwnProperty.call(loaded || {}, "copiedList") ? loaded.copiedList : null
 });
 
+const createGuestAccount = () => ({ mode: "guest" });
+
+const loadAccount = () => {
+  const stored = localStorage.getItem(ACCOUNT_KEY);
+  if (!stored) return createGuestAccount();
+  try {
+    const parsed = JSON.parse(stored);
+    return parsed?.mode === "account" ? parsed : createGuestAccount();
+  } catch {
+    return createGuestAccount();
+  }
+};
+
+let account = loadAccount();
+
+const accountStorageKey = () => `${ACCOUNT_STORAGE_PREFIX}${account.provider}-${account.providerId}`;
+
+const currentStorageKey = () => account.mode === "account" ? accountStorageKey() : STORAGE_KEY;
+
 const loadState = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = localStorage.getItem(currentStorageKey());
   if (!stored) return createEmptyState();
   try {
     return normalizeState(JSON.parse(stored));
@@ -126,11 +147,97 @@ let draftList = null;
 let editingDraft = false;
 
 const persist = () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(currentStorageKey(), JSON.stringify(state));
+};
+
+const persistAccount = () => {
+  localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
 };
 
 const showStatus = (message) => {
   $("#status-message").textContent = message;
+};
+
+const hasUserData = (candidate) => Boolean(
+  candidate.today.length ||
+  candidate.daily.length ||
+  candidate.planned.length ||
+  candidate.lists.length
+);
+
+const loadGuestState = () => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return createEmptyState();
+  try {
+    return normalizeState(JSON.parse(stored));
+  } catch {
+    return createEmptyState();
+  }
+};
+
+const mergeById = (baseItems, incomingItems) => {
+  const result = [...baseItems];
+  const seen = new Set(result.map((item) => item.id));
+  incomingItems.forEach((item) => {
+    if (seen.has(item.id)) return;
+    result.push(item);
+    seen.add(item.id);
+  });
+  return result;
+};
+
+const mergeStates = (baseState, incomingState) => ({
+  ...baseState,
+  today: mergeById(baseState.today, incomingState.today),
+  daily: mergeById(baseState.daily, incomingState.daily),
+  planned: mergeById(baseState.planned, incomingState.planned),
+  lists: mergeById(baseState.lists, incomingState.lists),
+  copiedList: baseState.copiedList || incomingState.copiedList,
+  selectedDate: baseState.selectedDate || incomingState.selectedDate,
+  lastDailyDate: baseState.lastDailyDate || incomingState.lastDailyDate
+});
+
+const renderAccount = () => {
+  const guestState = loadGuestState();
+  const isSignedIn = account.mode === "account";
+  $("#account-status").textContent = isSignedIn ? "계정에 저장됨" : "이 기기에 저장됨";
+  $("#google-login-button").hidden = isSignedIn;
+  $("#logout-button").hidden = !isSignedIn;
+  $("#import-local-button").hidden = !isSignedIn || !hasUserData(guestState);
+};
+
+const signInWithGoogle = () => {
+  account = {
+    mode: "account",
+    provider: "google",
+    providerId: "prototype-google-user",
+    email: "google-user@example.com",
+    displayName: "Google 사용자"
+  };
+  persistAccount();
+  state = loadState();
+  persist();
+  showStatus("Google 계정 저장으로 전환했어요.");
+  renderAccount();
+  refreshActiveView();
+};
+
+const importLocalDataToAccount = () => {
+  if (account.mode !== "account") return;
+  state = mergeStates(state, loadGuestState());
+  persist();
+  showStatus("이 기기 데이터를 계정에 가져왔어요.");
+  renderAccount();
+  refreshActiveView();
+};
+
+const signOut = () => {
+  account = createGuestAccount();
+  persistAccount();
+  state = loadState();
+  showStatus("게스트 저장으로 전환했어요.");
+  renderAccount();
+  refreshActiveView();
 };
 
 const formatDate = (dateKey, options = {}) => {
@@ -838,9 +945,14 @@ $("#import-input").addEventListener("change", (event) => {
   reader.readAsText(file);
 });
 
+$("#google-login-button").addEventListener("click", signInWithGoogle);
+$("#import-local-button").addEventListener("click", importLocalDataToAccount);
+$("#logout-button").addEventListener("click", signOut);
+
 processDueItems();
 renderToday();
 renderDaily();
+renderAccount();
 
 if (
   typeof navigator !== "undefined" &&
@@ -849,6 +961,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=11").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=12").catch(() => {});
   });
 }

@@ -12,7 +12,7 @@
 | Stage | Usable PWA Prototype |
 | Platform | iPhone-first PWA Web |
 | Storage | LocalStorage Prototype |
-| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=11 |
+| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=12 |
 | Repository | to-do-list-application |
 
 ## 2. Problem
@@ -92,6 +92,7 @@
 - LocalStorage 기반 데이터 유지
 - JSON 백업/복원과 데이터 비우기
 - PWA manifest와 service worker 기반 앱 셸 캐시
+- 게스트 저장 유지, Google 로그인 프로토타입, 로컬 데이터 계정 가져오기
 
 ## 6. Test Strategy
 
@@ -117,6 +118,8 @@ node --test tests/todo.test.cjs
 - 계획에서 오늘 날짜 선택 시 오늘 할 일 표시
 - 날짜별 할 일 분리 표시
 - 새 날짜의 활성 데일리 루틴 미완료 생성
+- 게스트 저장과 계정 저장 전환
+- 로컬 데이터 계정 가져오기
 - 오늘/계획 스와이프 이동
 - 계획 날짜 영역 스와이프 시 화면 전환 방지
 - 계획에서 오늘 날짜에 추가한 항목의 오늘 저장
@@ -136,7 +139,7 @@ node --test tests/todo.test.cjs
 | UI | HTML/CSS/JavaScript | Spring Boot + Thymeleaf 또는 REST API |
 | Storage | LocalStorage | IndexedDB, 이후 서버 DB |
 | PWA | Manifest + Service Worker | iPhone 홈 화면 설치 테스트 |
-| Test | Node test runner, 19 cases | 도메인 로직 분리 후 단위 테스트 확대 |
+| Test | Node test runner, 22 cases | 도메인 로직 분리 후 단위 테스트 확대 |
 | Backend | - | Java/Spring Boot API 설계 |
 | Deploy | GitHub Pages | iPhone 홈 화면 설치 검증 |
 

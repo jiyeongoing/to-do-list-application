@@ -663,6 +663,32 @@ button {
   margin: 0;
 }
 
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.account-actions .storage-note {
+  width: 100%;
+}
+
+.account-actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #5e5b55;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.account-actions button[hidden] {
+  display: none;
+}
+
 @media (max-width: 430px) {
   .phone {
     width: 100%;

@@ -210,6 +210,10 @@ const createDocument = () => {
     ["export-button"],
     ["import-input"],
     ["clear-button"],
+    ["account-status"],
+    ["google-login-button"],
+    ["import-local-button"],
+    ["logout-button"],
     ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
   document.register("phone", "phone");
@@ -262,6 +266,54 @@ test("첫 실행은 샘플 없이 빈 목록으로 시작한다", () => {
     assert.deepEqual(state.planned, []);
     assert.deepEqual(state.lists, []);
     assert.equal(state.selectedDate, todayKey());
+  `);
+});
+
+test("게스트 사용자는 기존처럼 이 기기에 저장한다", () => {
+  runAppTest(`
+    document.querySelector("#today-input").value = "게스트 할 일";
+    document.querySelector("#today-form").requestSubmit();
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    assert.equal(account.mode, "guest");
+    assert.equal(saved.today[0].title, "게스트 할 일");
+    assert.equal(document.querySelector("#account-status").textContent, "이 기기에 저장됨");
+  `);
+});
+
+test("Google 로그인 후 계정 저장으로 전환한다", () => {
+  runAppTest(`
+    state.today = [{ id: "local-a", date: todayKey(), title: "로컬 할 일", completed: false }];
+    persist();
+
+    document.querySelector("#google-login-button").dispatchEvent({ type: "click" });
+
+    assert.equal(account.mode, "account");
+    assert.equal(account.provider, "google");
+    assert.deepEqual(state.today, []);
+    assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
+    assert.equal(document.querySelector("#account-status").textContent, "계정에 저장됨");
+    assert.equal(document.querySelector("#import-local-button").hidden, false);
+  `);
+});
+
+test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합한다", () => {
+  runAppTest(`
+    state.today = [{ id: "local-a", date: todayKey(), title: "로컬 할 일", completed: false }];
+    state.daily = [{ id: "daily-a", title: "물 마시기", active: true }];
+    persist();
+
+    document.querySelector("#google-login-button").dispatchEvent({ type: "click" });
+    document.querySelector("#import-local-button").dispatchEvent({ type: "click" });
+    document.querySelector("#today-input").value = "계정 할 일";
+    document.querySelector("#today-form").requestSubmit();
+
+    const accountSaved = JSON.parse(localStorage.getItem(accountStorageKey()));
+    const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    assert.deepEqual(accountSaved.today.map((item) => item.title), ["계정 할 일", "로컬 할 일"]);
+    assert.equal(accountSaved.daily[0].title, "물 마시기");
+    assert.deepEqual(localSaved.today.map((item) => item.title), ["로컬 할 일"]);
+    assert.equal(document.querySelector("#status-message").textContent, "이 기기 데이터를 계정에 가져왔어요.");
   `);
 });
 
