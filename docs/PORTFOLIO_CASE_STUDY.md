@@ -152,5 +152,7 @@ node --test tests/todo.test.cjs
 
 - 실제 iPhone 홈 화면 설치 테스트
 - IndexedDB 저장 구조 설계
+- Google 로그인 기반 계정 저장 설계
+- 로컬 데이터 가져오기와 서버 데이터 병합 정책 검증
 - [Java/Spring Boot 기반 서버 확장 설계](SPRING_BOOT_EXPANSION.md)
 - 실제 1주 사용 기록 기반 우선순위 조정

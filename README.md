@@ -132,7 +132,9 @@ node --test tests/todo.test.cjs
 
 ## Future Opportunities
 
-- 로그인 및 여러 기기 동기화
+- Google 로그인 기반 계정 저장
+- 로컬 데이터 가져오기와 여러 기기 동기화
+- Apple 로그인 검토
 - 알림과 마감 시간
 - 완료 기록 및 루틴 달성률
 - 네이티브 iOS 앱/위젯 확장 검토
