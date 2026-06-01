@@ -2,28 +2,28 @@
 
 ## 1. 목적
 
-현재 `Swipe Todo`는 제품 흐름을 검증하기 위한 정적 PWA 프로토타입입니다.
-다음 단계에서는 Java/Spring Boot 기반으로 확장해 백엔드 설계 역량까지
-보여주는 것을 목표로 합니다.
+현재 `Swipe Todo`는 제품 흐름을 검증하기 위한 정적 PWA 프로토타입에서 출발했고,
+로컬 Spring Boot 백엔드를 추가해 계정 저장 API의 첫 구조를 검증합니다.
 
 ## 2. 확장 방향
 
 | 단계 | 목표 | 저장 방식 |
 | --- | --- | --- |
 | Phase 1 | 정적 PWA + 로컬 저장 검증 | LocalStorage |
-| Phase 2 | Spring Boot로 화면 제공 | IndexedDB 유지 |
+| Phase 2 | 로컬 Spring Boot API 추가 | In-memory prototype |
 | Phase 3 | REST API와 DB 도입 | H2/PostgreSQL |
-| Phase 4 | Google 로그인/동기화 선택 도입 | Spring Security OAuth2 + DB |
+| Phase 4 | Google OAuth 실제 연결 | Spring Security OAuth2 + DB |
 | Phase 5 | Apple 로그인 검토 | OAuth2/OIDC |
 
-초기 정책은 로그인 없는 단일 기기 저장입니다. 다음 확장에서는 이 장점을 유지하면서
-Google 로그인 사용자는 서버에 저장하고, 필요 시 로컬 데이터를 계정으로 가져오게 합니다.
+초기 정책은 로그인 없는 단일 기기 저장입니다. 로컬 백엔드 단계에서는 이 장점을
+유지하면서 Google 로그인 프로토타입 사용자는 계정 저장소로 전환하고, 필요 시
+로컬 데이터를 계정으로 가져오게 합니다.
 
 ## 3. 추천 패키지 구조
 
 ```text
 src/main/java/com/swipetodo
-├── SwipeTodoApplication.java
+├── BackendApplication.java
 ├── todo
 │   ├── domain
 │   │   ├── TodoItem.java
@@ -78,6 +78,7 @@ src/main/java/com/swipetodo
 | POST | `/api/plans/lists/{id}/copy` | 목적별 리스트 복사 |
 | POST | `/api/plans/lists/paste` | 선택 날짜에 리스트 붙여넣기 |
 | GET | `/api/me` | 로그인 사용자와 저장 방식 조회 |
+| POST | `/api/auth/google/prototype` | Google 로그인 프로토타입 |
 | POST | `/api/sync/import-local` | 로컬 데이터를 계정 저장소로 가져오기 |
 | GET | `/api/sync/export` | 서버 저장 데이터를 내려받기 |
 
@@ -106,7 +107,8 @@ src/main/java/com/swipetodo
 
 - 게스트 사용자는 기존 로컬 저장을 계속 사용합니다.
 - 현재 정적 PWA는 Google 로그인 흐름을 프로토타입으로 검증합니다.
-- Spring Boot 확장 후 Google 로그인 사용자는 서버 저장을 사용합니다.
+- 로컬 Spring Boot 서버는 `localhost:8080`에서 계정 저장 API를 제공합니다.
+- Spring Boot 실제 OAuth 확장 후 Google 로그인 사용자는 서버 저장을 사용합니다.
 - 로그인 직후 로컬 데이터가 있으면 `이 기기 데이터 가져오기`를 노출합니다.
 - 가져오기 시 서버 데이터와 병합하고, 기존 로컬 데이터는 사용자가 확인하기 전까지 삭제하지 않습니다.
 - Apple 로그인은 iPhone 사용성 개선 후보로 두고, Google 로그인 이후 적용 여부를 판단합니다.
@@ -120,6 +122,7 @@ src/main/java/com/swipetodo
 | Repository Test | 날짜별 조회, orderIndex 정렬 |
 | E2E 후보 | 오늘 리스트 완료 수 갱신, 과거 날짜 읽기전용 |
 | Auth Test | OAuth 로그인 사용자 식별, 계정별 데이터 분리 |
+| API Test | `/api/me`, Google 프로토타입 로그인, 로컬 데이터 가져오기 |
 
 우선순위 높은 테스트:
 

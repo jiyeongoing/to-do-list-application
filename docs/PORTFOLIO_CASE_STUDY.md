@@ -12,7 +12,7 @@
 | Stage | Usable PWA Prototype |
 | Platform | iPhone-first PWA Web |
 | Storage | LocalStorage Prototype |
-| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=12 |
+| Demo | https://jiyeongoing.github.io/to-do-list-application/?v=13 |
 | Repository | to-do-list-application |
 
 ## 2. Problem

@@ -1,6 +1,7 @@
 const STORAGE_KEY = "swipe-todo-prototype-v1";
 const ACCOUNT_KEY = "swipe-todo-account-v1";
 const ACCOUNT_STORAGE_PREFIX = "swipe-todo-account-state-";
+const API_BASE_URL = "http://localhost:8080/api";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -154,6 +155,11 @@ const persistAccount = () => {
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
 };
 
+const callLocalApi = (path, options = {}) => {
+  if (typeof fetch !== "function") return Promise.resolve(null);
+  return fetch(`${API_BASE_URL}${path}`, options).catch(() => null);
+};
+
 const showStatus = (message) => {
   $("#status-message").textContent = message;
 };
@@ -207,6 +213,7 @@ const renderAccount = () => {
 };
 
 const signInWithGoogle = () => {
+  callLocalApi("/auth/google/prototype", { method: "POST" });
   account = {
     mode: "account",
     provider: "google",
@@ -226,6 +233,14 @@ const importLocalDataToAccount = () => {
   if (account.mode !== "account") return;
   state = mergeStates(state, loadGuestState());
   persist();
+  callLocalApi("/sync/import-local", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Prototype-Account-Id": account.providerId
+    },
+    body: JSON.stringify(state)
+  });
   showStatus("이 기기 데이터를 계정에 가져왔어요.");
   renderAccount();
   refreshActiveView();
@@ -961,6 +976,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=12").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=13").catch(() => {});
   });
 }

@@ -227,6 +227,7 @@ const runAppTest = (body) => {
   const context = {
     assert,
     document,
+    fetchCalls: [],
     Intl,
     console,
     Date,
@@ -240,6 +241,13 @@ const runAppTest = (body) => {
         this.store[key] = String(value);
       }
     }
+  };
+  context.fetch = (url, options = {}) => {
+    context.fetchCalls.push({ url, options });
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({})
+    });
   };
 
   vm.runInNewContext(`${appCode}\n${body}`, context, { filename: "todo.test.vm.js" });
@@ -294,6 +302,7 @@ test("Google 로그인 후 계정 저장으로 전환한다", () => {
     assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
     assert.equal(document.querySelector("#account-status").textContent, "계정에 저장됨");
     assert.equal(document.querySelector("#import-local-button").hidden, false);
+    assert.equal(fetchCalls[0].url, "http://localhost:8080/api/auth/google/prototype");
   `);
 });
 
@@ -310,9 +319,12 @@ test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합�
 
     const accountSaved = JSON.parse(localStorage.getItem(accountStorageKey()));
     const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const importCall = fetchCalls.find((call) => call.url.endsWith("/sync/import-local"));
     assert.deepEqual(accountSaved.today.map((item) => item.title), ["계정 할 일", "로컬 할 일"]);
     assert.equal(accountSaved.daily[0].title, "물 마시기");
     assert.deepEqual(localSaved.today.map((item) => item.title), ["로컬 할 일"]);
+    assert.equal(importCall.options.headers["X-Prototype-Account-Id"], "prototype-google-user");
+    assert.match(importCall.options.body, /로컬 할 일/);
     assert.equal(document.querySelector("#status-message").textContent, "이 기기 데이터를 계정에 가져왔어요.");
   `);
 });
