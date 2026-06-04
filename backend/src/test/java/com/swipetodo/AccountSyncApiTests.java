@@ -1,6 +1,7 @@
 package com.swipetodo;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,12 +32,37 @@ class AccountSyncApiTests {
 	}
 
 	@Test
+	void googleLoginStatusFallsBackToPrototypeWithoutOAuthRegistration() throws Exception {
+		mockMvc.perform(get("/api/auth/google/status"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.oauthReady").value(false))
+			.andExpect(jsonPath("$.prototypeUrl").value("/api/auth/google/prototype"));
+	}
+
+	@Test
 	void prototypeGoogleLoginReturnsAccount() throws Exception {
 		mockMvc.perform(post("/api/auth/google/prototype"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.mode").value("account"))
 			.andExpect(jsonPath("$.provider").value("google"))
 			.andExpect(jsonPath("$.providerId").value("prototype-google-user"));
+	}
+
+	@Test
+	void meReturnsOAuthAccountWhenAuthenticated() throws Exception {
+		mockMvc.perform(get("/api/me")
+				.with(oauth2Login()
+					.attributes((attributes) -> {
+						attributes.put("sub", "google-oauth-user");
+						attributes.put("email", "oauth@example.com");
+						attributes.put("name", "OAuth 사용자");
+					})))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.mode").value("account"))
+			.andExpect(jsonPath("$.provider").value("google"))
+			.andExpect(jsonPath("$.providerId").value("google-oauth-user"))
+			.andExpect(jsonPath("$.email").value("oauth@example.com"))
+			.andExpect(jsonPath("$.displayName").value("OAuth 사용자"));
 	}
 
 	@Test

@@ -133,13 +133,15 @@ cd backend
 - Frontend local preview: `http://localhost:4173`
 - Prototype API:
   - `GET /api/me`
+  - `GET /api/auth/google/status`
   - `POST /api/auth/google/prototype`
   - `POST /api/sync/import-local`
   - `GET /api/sync/export`
 
-현재 Google 로그인은 실제 OAuth 연결 전 단계의 프로토타입입니다. 프론트는 로컬
-백엔드가 켜져 있으면 `localhost:8080`으로 계정 저장 요청을 보내고, 서버가 꺼져
-있어도 기존 로컬 저장 흐름은 유지됩니다.
+현재 Google 로그인은 실제 OAuth 설정 전에는 프로토타입 로그인으로 동작합니다.
+백엔드에 Google OAuth client id/secret을 설정하면 Spring Security OAuth 로그인
+세션을 `/api/me`에서 계정으로 인식합니다. 서버가 꺼져 있어도 기존 로컬 저장 흐름은
+유지됩니다.
 
 계정 정보와 계정 저장 데이터는 백엔드의 H2 파일 DB(`backend/data`)에 보관됩니다.
 `data/`는 개인 실행 데이터라 Git에는 올리지 않습니다.

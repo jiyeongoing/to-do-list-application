@@ -26,6 +26,8 @@ public class UserAccount {
 	@Column(name = "provider_id", nullable = false)
 	private String providerId;
 
+	private String email;
+
 	@Column(nullable = false)
 	private String displayName;
 
@@ -35,9 +37,10 @@ public class UserAccount {
 	protected UserAccount() {
 	}
 
-	UserAccount(String provider, String providerId, String displayName) {
+	UserAccount(String provider, String providerId, String email, String displayName) {
 		this.provider = provider;
 		this.providerId = providerId;
+		this.email = email;
 		this.displayName = displayName;
 		this.createdAt = Instant.now();
 	}
@@ -54,7 +57,16 @@ public class UserAccount {
 		return providerId;
 	}
 
+	public String email() {
+		return email;
+	}
+
 	public String displayName() {
 		return displayName;
+	}
+
+	void updateProfile(String email, String displayName) {
+		this.email = email;
+		this.displayName = displayName;
 	}
 }

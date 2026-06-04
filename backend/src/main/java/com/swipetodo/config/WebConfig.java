@@ -17,6 +17,7 @@ class WebConfig {
 		configuration.addAllowedOrigin("https://jiyeongoing.github.io");
 		configuration.addAllowedHeader("*");
 		configuration.addAllowedMethod("*");
+		configuration.setAllowCredentials(true);
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/api/**", configuration);
 		return new CorsFilter(source);

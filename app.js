@@ -155,9 +155,19 @@ const persistAccount = () => {
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
 };
 
-const callLocalApi = (path, options = {}) => {
-  if (typeof fetch !== "function") return Promise.resolve(null);
-  return fetch(`${API_BASE_URL}${path}`, options).catch(() => null);
+const callLocalApi = async (path, options = {}) => {
+	if (typeof fetch !== "function") return Promise.resolve(null);
+	try {
+		const response = await fetch(`${API_BASE_URL}${path}`, {
+			credentials: "include",
+			...options
+		});
+		if (!response.ok) return null;
+		const text = await response.text();
+		return text ? JSON.parse(text) : null;
+	} catch {
+		return null;
+	}
 };
 
 const showStatus = (message) => {
@@ -212,26 +222,50 @@ const renderAccount = () => {
   $("#import-local-button").hidden = !isSignedIn || !hasUserData(guestState);
 };
 
-const signInWithGoogle = () => {
-  callLocalApi("/auth/google/prototype", { method: "POST" });
-  account = {
-    mode: "account",
-    provider: "google",
-    providerId: "prototype-google-user",
-    email: "google-user@example.com",
-    displayName: "Google 사용자"
-  };
-  persistAccount();
-  state = loadState();
-  persist();
-  showStatus("Google 계정 저장으로 전환했어요.");
-  renderAccount();
-  refreshActiveView();
+const prototypeGoogleAccount = () => ({
+	mode: "account",
+	provider: "google",
+	providerId: "prototype-google-user",
+	email: "google-user@example.com",
+	displayName: "Google 사용자"
+});
+
+const applyAccount = (nextAccount) => {
+	account = nextAccount;
+	persistAccount();
+	state = loadState();
+	persist();
+	renderAccount();
+	refreshActiveView();
+};
+
+const signInWithGoogle = async () => {
+	if (typeof window === "undefined" || typeof fetch !== "function") {
+		callLocalApi("/auth/google/prototype", { method: "POST" });
+		applyAccount(prototypeGoogleAccount());
+		showStatus("Google 계정 저장으로 전환했어요.");
+		return;
+	}
+	const status = await callLocalApi("/auth/google/status");
+	if (status?.oauthReady && status.loginUrl && typeof window !== "undefined") {
+		window.location.href = `${API_BASE_URL}${status.loginUrl}`;
+		return;
+	}
+	const response = await callLocalApi("/auth/google/prototype", { method: "POST" });
+	applyAccount(response?.mode === "account" ? response : prototypeGoogleAccount());
+	showStatus("Google 계정 저장으로 전환했어요.");
+};
+
+const syncAccountFromServer = async () => {
+	const response = await callLocalApi("/me");
+	if (response?.mode !== "account") return;
+	applyAccount(response);
+	showStatus("계정 저장으로 연결됐어요.");
 };
 
 const importLocalDataToAccount = () => {
-  if (account.mode !== "account") return;
-  state = mergeStates(state, loadGuestState());
+	if (account.mode !== "account") return;
+	state = mergeStates(state, loadGuestState());
   persist();
   callLocalApi("/sync/import-local", {
     method: "POST",
@@ -968,6 +1002,9 @@ processDueItems();
 renderToday();
 renderDaily();
 renderAccount();
+if (typeof window !== "undefined") {
+	syncAccountFromServer();
+}
 
 if (
   typeof navigator !== "undefined" &&

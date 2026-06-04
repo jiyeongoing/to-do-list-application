@@ -31,12 +31,28 @@ Git에는 포함하지 않습니다.
 | Method | Endpoint | 설명 |
 | --- | --- | --- |
 | GET | `/api/me` | 현재 저장 모드 조회 |
+| GET | `/api/auth/google/status` | 실제 Google OAuth 설정 여부 조회 |
 | POST | `/api/auth/google/prototype` | Google 로그인 프로토타입 |
 | POST | `/api/sync/import-local` | 로컬 데이터를 계정 저장소로 가져오기 |
 | GET | `/api/sync/export` | 계정 저장 데이터 조회 |
 
 계정 식별은 실제 OAuth 전 단계라 `X-Prototype-Account-Id` 헤더로 처리합니다.
 다음 단계에서 Spring Security OAuth2의 실제 로그인 사용자 정보로 교체할 예정입니다.
+
+## Google OAuth 설정
+
+Google Cloud Console에서 OAuth client를 만든 뒤 아래 값을 환경 변수나
+`application.properties`로 넣으면 실제 OAuth 로그인 경로를 사용할 수 있습니다.
+
+```properties
+spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID}
+spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET}
+spring.security.oauth2.client.registration.google.scope=openid,email,profile
+```
+
+OAuth 설정이 있으면 `/oauth2/authorization/google`로 로그인하고, 성공 후
+프론트 로컬 주소(`http://localhost:4173`)로 돌아옵니다. 설정이 없으면 기존
+프로토타입 로그인을 유지합니다.
 
 ## 저장 구조
 
