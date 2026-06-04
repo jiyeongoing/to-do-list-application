@@ -27,6 +27,11 @@ class AccountSyncService {
 	@Transactional
 	TodoState importLocal(String accountId, TodoState localState) {
 		UserAccount account = accountService.findOrCreatePrototypeAccount(accountId);
+		return importLocal(account, localState);
+	}
+
+	@Transactional
+	TodoState importLocal(UserAccount account, TodoState localState) {
 		SyncSnapshot snapshot = findSnapshot(account);
 		TodoState existing = deserialize(snapshot.payload());
 		TodoState merged = existing.merge(localState);
@@ -38,6 +43,11 @@ class AccountSyncService {
 	@Transactional
 	TodoState export(String accountId) {
 		UserAccount account = accountService.findOrCreatePrototypeAccount(accountId);
+		return export(account);
+	}
+
+	@Transactional
+	TodoState export(UserAccount account) {
 		return repository.findByAccount(account)
 			.map((snapshot) -> deserialize(snapshot.payload()))
 			.orElseGet(TodoState::empty);

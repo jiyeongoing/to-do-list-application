@@ -216,18 +216,23 @@ const mergeStates = (baseState, incomingState) => ({
 const renderAccount = () => {
   const guestState = loadGuestState();
   const isSignedIn = account.mode === "account";
-  $("#account-status").textContent = isSignedIn ? "계정에 저장됨" : "이 기기에 저장됨";
-  $("#google-login-button").hidden = isSignedIn;
+  $("#account-status").textContent = isSignedIn
+    ? `${account.displayName || "계정"}에 저장됨`
+    : "이 기기에 저장됨";
+  $("#member-login-button").hidden = isSignedIn;
+  $("#google-auth-button").hidden = isSignedIn && account.provider === "google";
+  $("#google-auth-button").textContent = isSignedIn ? "Google 연동" : "Google";
+  $("#member-form").hidden = true;
   $("#logout-button").hidden = !isSignedIn;
   $("#import-local-button").hidden = !isSignedIn || !hasUserData(guestState);
 };
 
-const prototypeGoogleAccount = () => ({
-	mode: "account",
-	provider: "google",
-	providerId: "prototype-google-user",
-	email: "google-user@example.com",
-	displayName: "Google 사용자"
+const createLocalTestMemberAccount = (email, displayName) => ({
+  mode: "account",
+  provider: "local",
+  providerId: email.trim().toLowerCase(),
+  email: email.trim().toLowerCase(),
+  displayName: displayName.trim() || email.trim().split("@")[0]
 });
 
 const applyAccount = (nextAccount) => {
@@ -239,21 +244,85 @@ const applyAccount = (nextAccount) => {
 	refreshActiveView();
 };
 
-const signInWithGoogle = async () => {
-	if (typeof window === "undefined" || typeof fetch !== "function") {
-		callLocalApi("/auth/google/prototype", { method: "POST" });
-		applyAccount(prototypeGoogleAccount());
-		showStatus("Google 계정 저장으로 전환했어요.");
-		return;
-	}
-	const status = await callLocalApi("/auth/google/status");
-	if (status?.oauthReady && status.loginUrl && typeof window !== "undefined") {
-		window.location.href = `${API_BASE_URL}${status.loginUrl}`;
-		return;
-	}
-	const response = await callLocalApi("/auth/google/prototype", { method: "POST" });
-	applyAccount(response?.mode === "account" ? response : prototypeGoogleAccount());
-	showStatus("Google 계정 저장으로 전환했어요.");
+const openMemberForm = () => {
+  $("#member-form").hidden = false;
+  $("#member-email").focus();
+};
+
+const memberCredentials = () => ({
+  email: $("#member-email").value.trim().toLowerCase(),
+  password: $("#member-password").value,
+  displayName: $("#member-name").value.trim()
+});
+
+const clearMemberForm = () => {
+  $("#member-email").value = "";
+  $("#member-password").value = "";
+  $("#member-name").value = "";
+};
+
+const submitMemberForm = async (event) => {
+  event.preventDefault();
+  const credentials = memberCredentials();
+  if (typeof window === "undefined") {
+    applyAccount(createLocalTestMemberAccount(credentials.email, credentials.displayName));
+    showStatus("로그인했어요.");
+    return;
+  }
+  const response = await callLocalApi("/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password
+    })
+  });
+  if (response?.mode !== "account") {
+    showStatus("로그인 정보를 확인해 주세요.");
+    return;
+  }
+  applyAccount(response);
+  clearMemberForm();
+  showStatus("로그인했어요.");
+};
+
+const signUpMember = async () => {
+  const credentials = memberCredentials();
+  const displayName = credentials.displayName || credentials.email.split("@")[0];
+  if (typeof window === "undefined") {
+    applyAccount(createLocalTestMemberAccount(credentials.email, displayName));
+    showStatus("회원가입했어요.");
+    return;
+  }
+  const response = await callLocalApi("/auth/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password,
+      displayName
+    })
+  });
+  if (response?.mode !== "account") {
+    showStatus("가입 정보를 확인해 주세요.");
+    return;
+  }
+  applyAccount(response);
+  clearMemberForm();
+  showStatus("회원가입했어요.");
+};
+
+const startGoogleAuth = async () => {
+  if (typeof window === "undefined") {
+    showStatus("Google 설정이 필요해요.");
+    return;
+  }
+  const status = await callLocalApi("/auth/google/status");
+  if (!status?.oauthReady || !status.loginUrl) {
+    showStatus("Google 설정이 필요해요.");
+    return;
+  }
+  window.location.href = `${API_BASE_URL}${status.loginUrl}`;
 };
 
 const syncAccountFromServer = async () => {
@@ -994,7 +1063,10 @@ $("#import-input").addEventListener("change", (event) => {
   reader.readAsText(file);
 });
 
-$("#google-login-button").addEventListener("click", signInWithGoogle);
+$("#member-login-button").addEventListener("click", openMemberForm);
+$("#member-form").addEventListener("submit", submitMemberForm);
+$("#member-signup-submit").addEventListener("click", signUpMember);
+$("#google-auth-button").addEventListener("click", startGoogleAuth);
 $("#import-local-button").addEventListener("click", importLocalDataToAccount);
 $("#logout-button").addEventListener("click", signOut);
 
@@ -1013,6 +1085,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=14").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=15").catch(() => {});
   });
 }

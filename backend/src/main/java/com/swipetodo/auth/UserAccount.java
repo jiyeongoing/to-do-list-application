@@ -26,7 +26,14 @@ public class UserAccount {
 	@Column(name = "provider_id", nullable = false)
 	private String providerId;
 
+	@Column(unique = true)
 	private String email;
+
+	@Column(name = "password_hash")
+	private String passwordHash;
+
+	@Column(name = "google_provider_id", unique = true)
+	private String googleProviderId;
 
 	@Column(nullable = false)
 	private String displayName;
@@ -45,6 +52,12 @@ public class UserAccount {
 		this.createdAt = Instant.now();
 	}
 
+	static UserAccount local(String email, String passwordHash, String displayName) {
+		UserAccount account = new UserAccount("local", normalizeEmail(email), normalizeEmail(email), displayName);
+		account.passwordHash = passwordHash;
+		return account;
+	}
+
 	public Long id() {
 		return id;
 	}
@@ -61,12 +74,32 @@ public class UserAccount {
 		return email;
 	}
 
+	public String passwordHash() {
+		return passwordHash;
+	}
+
+	public String googleProviderId() {
+		return googleProviderId;
+	}
+
 	public String displayName() {
 		return displayName;
 	}
 
 	void updateProfile(String email, String displayName) {
-		this.email = email;
+		this.email = normalizeEmail(email);
 		this.displayName = displayName;
+	}
+
+	void linkGoogle(String googleProviderId, String email, String displayName) {
+		this.provider = "google";
+		this.providerId = googleProviderId;
+		this.googleProviderId = googleProviderId;
+		this.email = normalizeEmail(email);
+		this.displayName = displayName;
+	}
+
+	private static String normalizeEmail(String email) {
+		return email == null ? null : email.trim().toLowerCase();
 	}
 }

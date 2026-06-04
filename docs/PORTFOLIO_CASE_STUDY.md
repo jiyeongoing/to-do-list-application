@@ -92,7 +92,7 @@
 - LocalStorage 기반 데이터 유지
 - JSON 백업/복원과 데이터 비우기
 - PWA manifest와 service worker 기반 앱 셸 캐시
-- 게스트 저장 유지, Google 로그인 프로토타입, 로컬 데이터 계정 가져오기
+- 게스트 저장 유지, 이메일/비밀번호 로그인, Google 계정 연동, 로컬 데이터 계정 가져오기
 
 ## 6. Test Strategy
 

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties = {
@@ -35,17 +36,58 @@ class AccountSyncApiTests {
 	void googleLoginStatusFallsBackToPrototypeWithoutOAuthRegistration() throws Exception {
 		mockMvc.perform(get("/api/auth/google/status"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.oauthReady").value(false))
-			.andExpect(jsonPath("$.prototypeUrl").value("/api/auth/google/prototype"));
+			.andExpect(jsonPath("$.oauthReady").value(false));
 	}
 
 	@Test
-	void prototypeGoogleLoginReturnsAccount() throws Exception {
-		mockMvc.perform(post("/api/auth/google/prototype"))
+	void signupAndLoginCreateAuthenticatedSession() throws Exception {
+		String signupPayload = """
+			{ "email": "real@example.com", "password": "real-password", "displayName": "진짜회원" }
+			""";
+		String loginPayload = """
+			{ "email": "real@example.com", "password": "real-password" }
+			""";
+
+		MockHttpSession signupSession = (MockHttpSession) mockMvc.perform(post("/api/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(signupPayload))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.mode").value("account"))
-			.andExpect(jsonPath("$.provider").value("google"))
-			.andExpect(jsonPath("$.providerId").value("prototype-google-user"));
+			.andExpect(jsonPath("$.provider").value("local"))
+			.andExpect(jsonPath("$.email").value("real@example.com"))
+			.andReturn()
+			.getRequest()
+			.getSession(false);
+
+		mockMvc.perform(get("/api/me").session(signupSession))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.email").value("real@example.com"));
+
+		MockHttpSession loginSession = (MockHttpSession) mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(loginPayload))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.displayName").value("진짜회원"))
+			.andReturn()
+			.getRequest()
+			.getSession(false);
+
+		mockMvc.perform(get("/api/me").session(loginSession))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.email").value("real@example.com"));
+	}
+
+	@Test
+	void invalidPasswordIsRejected() throws Exception {
+		mockMvc.perform(post("/api/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"wrong@example.com\",\"password\":\"right-password\",\"displayName\":\"회원\"}"))
+			.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"wrong@example.com\",\"password\":\"wrong-password\"}"))
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -63,6 +105,27 @@ class AccountSyncApiTests {
 			.andExpect(jsonPath("$.providerId").value("google-oauth-user"))
 			.andExpect(jsonPath("$.email").value("oauth@example.com"))
 			.andExpect(jsonPath("$.displayName").value("OAuth 사용자"));
+	}
+
+	@Test
+	void googleOAuthLinksToExistingLocalAccountByEmail() throws Exception {
+		mockMvc.perform(post("/api/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"link@example.com\",\"password\":\"local-password\",\"displayName\":\"로컬회원\"}"))
+			.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/me")
+				.with(oauth2Login()
+					.attributes((attributes) -> {
+						attributes.put("sub", "google-linked-user");
+						attributes.put("email", "link@example.com");
+						attributes.put("name", "구글회원");
+					})))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.mode").value("account"))
+			.andExpect(jsonPath("$.provider").value("google"))
+			.andExpect(jsonPath("$.providerId").value("google-linked-user"))
+			.andExpect(jsonPath("$.email").value("link@example.com"));
 	}
 
 	@Test

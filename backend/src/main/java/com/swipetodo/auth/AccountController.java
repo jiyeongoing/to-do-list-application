@@ -1,11 +1,14 @@
 package com.swipetodo.auth;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,14 +28,25 @@ class AccountController {
 	}
 
 	@GetMapping("/me")
-	AccountResponse me(Authentication authentication) {
+	AccountResponse me(Authentication authentication, HttpSession session) {
 		if (authentication instanceof OAuth2AuthenticationToken oauth) {
 			return accountService.loginOAuth(
 				oauth.getAuthorizedClientRegistrationId(),
-				oauth.getPrincipal().getAttributes()
+				oauth.getPrincipal().getAttributes(),
+				session
 			);
 		}
-		return accountService.guest();
+		return accountService.current(session);
+	}
+
+	@PostMapping("/auth/signup")
+	AccountResponse signup(@Valid @RequestBody SignupRequest request, HttpSession session) {
+		return accountService.signup(request, session);
+	}
+
+	@PostMapping("/auth/login")
+	AccountResponse login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+		return accountService.login(request, session);
 	}
 
 	@GetMapping("/auth/google/status")
@@ -40,14 +54,8 @@ class AccountController {
 		boolean oauthReady = hasGoogleRegistration();
 		return new OAuthLoginStatusResponse(
 			oauthReady,
-			oauthReady ? "/oauth2/authorization/google" : null,
-			"/api/auth/google/prototype"
+			oauthReady ? "/oauth2/authorization/google" : null
 		);
-	}
-
-	@PostMapping("/auth/google/prototype")
-	AccountResponse prototypeGoogleLogin() {
-		return accountService.loginPrototypeGoogle();
 	}
 
 	private boolean hasGoogleRegistration() {
