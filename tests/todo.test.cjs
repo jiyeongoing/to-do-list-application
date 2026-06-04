@@ -230,6 +230,7 @@ const createDocument = () => {
 const appCode = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const htmlCode = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const cssCode = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
+const serviceWorkerCode = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
 
 const runAppTest = (body) => {
   const document = createDocument();
@@ -306,6 +307,15 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
   assert.match(htmlCode, /id="member-password"/);
   assert.match(htmlCode, /placeholder="별명"/);
   assert.match(cssCode, /\.account-bar\s*{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
+});
+
+test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
+  assert.match(htmlCode, /app\.js\?v=17/);
+  assert.match(htmlCode, /styles\.css\?v=17/);
+  assert.match(appCode, /service-worker\.js\?v=17/);
+  assert.match(serviceWorkerCode, /swipe-todo-v17/);
+  assert.match(serviceWorkerCode, /app\.js\?v=17/);
+  assert.match(serviceWorkerCode, /styles\.css\?v=17/);
 });
 
 test("회원가입 후 계정 저장으로 전환한다", () => {

@@ -1111,6 +1111,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=16").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=17").catch(() => {});
   });
 }
