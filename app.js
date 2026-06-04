@@ -238,9 +238,11 @@ const renderAccount = () => {
   if (isSignedIn) {
     const safeDisplayName = escapeHtml(displayName);
     $("#today-title").innerHTML = `<span class="nickname-highlight">${safeDisplayName}</span>의 오늘`;
+    $("#daily-title").innerHTML = `<span class="nickname-highlight">${safeDisplayName}</span>의 데일리루틴`;
     $("#plan-title").innerHTML = `<span class="nickname-highlight">${safeDisplayName}</span>의 계획`;
   } else {
     $("#today-title").textContent = "오늘";
+    $("#daily-title").textContent = "데일리루틴";
     $("#plan-title").textContent = "계획";
   }
   $("#open-login-button").hidden = isSignedIn;
@@ -1203,6 +1205,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=22").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
   });
 }

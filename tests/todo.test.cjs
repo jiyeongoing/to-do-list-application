@@ -182,6 +182,7 @@ const createDocument = () => {
     ["arrived-lists"],
     ["done-items"],
     ["daily-items"],
+    ["daily-title"],
     ["month-picker"],
     ["plan-title"],
     ["calendar-input"],
@@ -334,12 +335,15 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
-  assert.match(htmlCode, /app\.js\?v=22/);
-  assert.match(htmlCode, /styles\.css\?v=22/);
-  assert.match(appCode, /service-worker\.js\?v=22/);
-  assert.match(serviceWorkerCode, /swipe-todo-v22/);
-  assert.match(serviceWorkerCode, /app\.js\?v=22/);
-  assert.match(serviceWorkerCode, /styles\.css\?v=22/);
+  assert.match(htmlCode, /<script src="app\.js" defer><\/script>/);
+  assert.match(htmlCode, /href="styles\.css"/);
+  assert.match(appCode, /service-worker\.js"\)/);
+  assert.match(serviceWorkerCode, /swipe-todo-static/);
+  assert.match(serviceWorkerCode, /"\.\/app\.js"/);
+  assert.match(serviceWorkerCode, /"\.\/styles\.css"/);
+  assert.doesNotMatch(htmlCode, /\?v=/);
+  assert.doesNotMatch(appCode, /service-worker\.js\?v=/);
+  assert.doesNotMatch(serviceWorkerCode, /\?v=/);
 });
 
 test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
@@ -391,6 +395,7 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
     assert.equal(document.querySelector("#account-status").textContent, "회원에 저장됨");
     assert.equal(document.querySelector("#today-title").innerHTML, '<span class="nickname-highlight">회원</span>의 오늘');
+    assert.equal(document.querySelector("#daily-title").innerHTML, '<span class="nickname-highlight">회원</span>의 데일리루틴');
     assert.equal(document.querySelector("#plan-title").innerHTML, '<span class="nickname-highlight">회원</span>의 계획');
     assert.equal(document.querySelector("#import-local-button").hidden, false);
   `);
@@ -418,6 +423,7 @@ test("로그아웃하면 계정 데이터와 게스트 데이터가 비워진다
     assert.ok(fetchCalls.some((call) => call.url.endsWith("/logout") && call.options.method === "POST"));
     assert.deepEqual(state.today, []);
     assert.equal(document.querySelector("#today-title").textContent, "오늘");
+    assert.equal(document.querySelector("#daily-title").textContent, "데일리루틴");
     assert.equal(document.querySelector("#plan-title").textContent, "계획");
   `);
 });
