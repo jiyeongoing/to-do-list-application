@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
+import com.swipetodo.auth.AccountService;
+import com.swipetodo.auth.UserAccount;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +19,9 @@ class AccountSyncPersistenceTests {
 
 	@Autowired
 	AccountSyncRepository repository;
+
+	@Autowired
+	AccountService accountService;
 
 	@Autowired
 	AccountSyncService service;
@@ -37,7 +42,9 @@ class AccountSyncPersistenceTests {
 
 		service.importLocal("prototype-google-user", localState);
 
-		SyncSnapshot snapshot = repository.findByAccountId("prototype-google-user").orElseThrow();
+		UserAccount account = accountService.findOrCreatePrototypeAccount("prototype-google-user");
+		SyncSnapshot snapshot = repository.findByAccount(account).orElseThrow();
+		assertThat(snapshot.account().providerId()).isEqualTo("prototype-google-user");
 		assertThat(snapshot.payload()).contains("서버 저장 확인");
 		assertThat(service.export("prototype-google-user").today()).hasSize(1);
 	}

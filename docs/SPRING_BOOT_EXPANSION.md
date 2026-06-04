@@ -58,8 +58,8 @@ src/main/java/com/swipetodo
 | PlannedItem | id, title, plannedDate, orderIndex | 특정 날짜 예약 항목 |
 | PurposeList | id, title, plannedDate, orderIndex, items | 날짜에 연결된 목적별 리스트 |
 | PurposeListItem | id, title, completed, orderIndex | 리스트 내부 체크 항목 |
-| UserAccount | id, provider, providerId, email, displayName | 로그인 사용자 |
-| SyncSnapshot | userId, payload, updatedAt | 로컬 데이터 가져오기와 서버 저장 |
+| UserAccount | id, provider, providerId, displayName | 로그인 사용자 |
+| SyncSnapshot | account, accountId, payload | 로컬 데이터 가져오기와 서버 저장 |
 
 ## 5. REST API 초안
 
@@ -108,7 +108,8 @@ src/main/java/com/swipetodo
 - 게스트 사용자는 기존 로컬 저장을 계속 사용합니다.
 - 현재 정적 PWA는 Google 로그인 흐름을 프로토타입으로 검증합니다.
 - 로컬 Spring Boot 서버는 `localhost:8080`에서 계정 저장 API를 제공합니다.
-- 계정 저장 데이터는 H2 파일 DB에 `SyncSnapshot` 형태로 저장합니다.
+- 로그인 프로토타입은 `UserAccount`를 만들고, 계정 저장 데이터는 `SyncSnapshot`에 연결합니다.
+- H2 파일 DB를 사용해 로컬 서버 재시작 후에도 계정 저장 데이터를 유지합니다.
 - Spring Boot 실제 OAuth 확장 후 Google 로그인 사용자는 서버 저장을 사용합니다.
 - 로그인 직후 로컬 데이터가 있으면 `이 기기 데이터 가져오기`를 노출합니다.
 - 가져오기 시 서버 데이터와 병합하고, 기존 로컬 데이터는 사용자가 확인하기 전까지 삭제하지 않습니다.

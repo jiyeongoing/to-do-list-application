@@ -9,21 +9,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 class AccountController {
 
-	private static final AccountResponse GUEST = new AccountResponse("guest", null, null, null);
-	private static final AccountResponse PROTOTYPE_GOOGLE_ACCOUNT = new AccountResponse(
-		"account",
-		"google",
-		"prototype-google-user",
-		"Google 사용자"
-	);
+	private final AccountService accountService;
+
+	AccountController(AccountService accountService) {
+		this.accountService = accountService;
+	}
 
 	@GetMapping("/me")
 	AccountResponse me() {
-		return GUEST;
+		return accountService.guest();
 	}
 
 	@PostMapping("/auth/google/prototype")
 	AccountResponse prototypeGoogleLogin() {
-		return PROTOTYPE_GOOGLE_ACCOUNT;
+		return accountService.loginPrototypeGoogle();
 	}
 }

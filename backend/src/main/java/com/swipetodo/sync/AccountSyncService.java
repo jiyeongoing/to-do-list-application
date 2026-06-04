@@ -1,5 +1,7 @@
 package com.swipetodo.sync;
 
+import com.swipetodo.auth.AccountService;
+import com.swipetodo.auth.UserAccount;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
@@ -9,17 +11,23 @@ import tools.jackson.databind.ObjectMapper;
 class AccountSyncService {
 
 	private final AccountSyncRepository repository;
+	private final AccountService accountService;
 	private final ObjectMapper objectMapper;
 
-	AccountSyncService(AccountSyncRepository repository, ObjectMapper objectMapper) {
+	AccountSyncService(
+		AccountSyncRepository repository,
+		AccountService accountService,
+		ObjectMapper objectMapper
+	) {
 		this.repository = repository;
+		this.accountService = accountService;
 		this.objectMapper = objectMapper;
 	}
 
 	@Transactional
 	TodoState importLocal(String accountId, TodoState localState) {
-		SyncSnapshot snapshot = repository.findByAccountId(accountId)
-			.orElseGet(() -> new SyncSnapshot(accountId, serialize(TodoState.empty())));
+		UserAccount account = accountService.findOrCreatePrototypeAccount(accountId);
+		SyncSnapshot snapshot = findSnapshot(account);
 		TodoState existing = deserialize(snapshot.payload());
 		TodoState merged = existing.merge(localState);
 		snapshot.updatePayload(serialize(merged));
@@ -27,11 +35,21 @@ class AccountSyncService {
 		return merged;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	TodoState export(String accountId) {
-		return repository.findByAccountId(accountId)
+		UserAccount account = accountService.findOrCreatePrototypeAccount(accountId);
+		return repository.findByAccount(account)
 			.map((snapshot) -> deserialize(snapshot.payload()))
 			.orElseGet(TodoState::empty);
+	}
+
+	private SyncSnapshot findSnapshot(UserAccount account) {
+		return repository.findByAccount(account)
+			.or(() -> repository.findByAccountId(account.providerId()).map((snapshot) -> {
+				snapshot.attachAccount(account);
+				return snapshot;
+			}))
+			.orElseGet(() -> new SyncSnapshot(account, serialize(TodoState.empty())));
 	}
 
 	private String serialize(TodoState state) {

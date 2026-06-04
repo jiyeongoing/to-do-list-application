@@ -36,10 +36,11 @@ Git에는 포함하지 않습니다.
 | GET | `/api/sync/export` | 계정 저장 데이터 조회 |
 
 계정 식별은 실제 OAuth 전 단계라 `X-Prototype-Account-Id` 헤더로 처리합니다.
-다음 단계에서 Spring Security OAuth2와 사용자 DB로 교체할 예정입니다.
+다음 단계에서 Spring Security OAuth2의 실제 로그인 사용자 정보로 교체할 예정입니다.
 
 ## 저장 구조
 
-- `SyncSnapshot`: 계정 ID와 투두 JSON 스냅샷 저장
+- `UserAccount`: 로그인 제공자와 제공자별 사용자 ID 저장
+- `SyncSnapshot`: 계정과 연결된 투두 JSON 스냅샷 저장
 - `AccountSyncRepository`: 계정별 스냅샷 조회
 - `AccountSyncService`: 로컬 데이터 가져오기, 병합, 서버 저장 데이터 내려받기
