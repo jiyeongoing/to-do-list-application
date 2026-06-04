@@ -181,6 +181,7 @@ const createDocument = () => {
     ["done-items"],
     ["daily-items"],
     ["month-picker"],
+    ["plan-title"],
     ["calendar-input"],
     ["date-picker"],
     ["previous-date"],
@@ -215,14 +216,15 @@ const createDocument = () => {
     ["account-status"],
     ["open-login-button"],
     ["open-signup-button"],
-    ["google-auth-button"],
     ["login-form"],
     ["login-email"],
     ["login-password"],
     ["signup-form"],
+    ["signup-credential-step"],
     ["signup-email"],
     ["email-check-button"],
     ["signup-password"],
+    ["signup-password-confirm"],
     ["signup-nickname-step"],
     ["signup-nickname"],
     ["signup-submit-button"],
@@ -234,6 +236,7 @@ const createDocument = () => {
   ].forEach(([id, className]) => document.register(id, className));
   document.querySelector("#open-login-button").setAttribute("data-view", "login-view");
   document.querySelector("#open-signup-button").setAttribute("data-view", "signup-view");
+  document.querySelector("#signup-nickname-step").hidden = true;
   document.register("phone", "phone");
   return document;
 };
@@ -316,20 +319,21 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
   assert.match(htmlCode, /id="open-signup-button"/);
   assert.match(htmlCode, /id="login-view"/);
   assert.match(htmlCode, /id="signup-view"/);
-  assert.match(htmlCode, /id="google-auth-button"/);
+  assert.doesNotMatch(htmlCode, /id="google-auth-button"/);
   assert.match(htmlCode, /id="email-check-button"/);
   assert.match(htmlCode, /id="signup-password"/);
+  assert.match(htmlCode, /id="signup-password-confirm"/);
   assert.match(htmlCode, /placeholder="별명"/);
   assert.match(cssCode, /\.account-bar\s*{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
-  assert.match(htmlCode, /app\.js\?v=19/);
-  assert.match(htmlCode, /styles\.css\?v=19/);
-  assert.match(appCode, /service-worker\.js\?v=19/);
-  assert.match(serviceWorkerCode, /swipe-todo-v19/);
-  assert.match(serviceWorkerCode, /app\.js\?v=19/);
-  assert.match(serviceWorkerCode, /styles\.css\?v=19/);
+  assert.match(htmlCode, /app\.js\?v=20/);
+  assert.match(htmlCode, /styles\.css\?v=20/);
+  assert.match(appCode, /service-worker\.js\?v=20/);
+  assert.match(serviceWorkerCode, /swipe-todo-v20/);
+  assert.match(serviceWorkerCode, /app\.js\?v=20/);
+  assert.match(serviceWorkerCode, /styles\.css\?v=20/);
 });
 
 test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
@@ -351,8 +355,10 @@ test("회원가입 화면은 중복확인과 별명 입력 단계를 안내한�
 
     document.querySelector("#signup-email").value = "member@example.com";
     document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-password-confirm").value = "safe-password";
     document.querySelector("#signup-form").requestSubmit();
 
+    assert.equal(document.querySelector("#signup-credential-step").hidden, true);
     assert.equal(document.querySelector("#signup-nickname-step").hidden, false);
     assert.equal(document.querySelector("#signup-submit-button").textContent, "완료");
     assert.equal(document.querySelector("#signup-message").textContent, "별명을 입력해 주세요.");
@@ -367,6 +373,7 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
     document.querySelector("#signup-email").value = "member@example.com";
     document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-password-confirm").value = "safe-password";
     document.querySelector("#signup-form").requestSubmit();
     document.querySelector("#signup-nickname").value = "회원";
     document.querySelector("#signup-form").requestSubmit();
@@ -378,6 +385,7 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     assert.equal(document.querySelector("#today-view").classList.contains("active"), true);
     assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
     assert.equal(document.querySelector("#account-status").textContent, "회원에 저장됨");
+    assert.equal(document.querySelector("#plan-title").textContent, "회원 계획");
     assert.equal(document.querySelector("#import-local-button").hidden, false);
   `);
 });
@@ -391,6 +399,7 @@ test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합�
     document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
     document.querySelector("#signup-email").value = "member@example.com";
     document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-password-confirm").value = "safe-password";
     document.querySelector("#signup-form").requestSubmit();
     document.querySelector("#signup-nickname").value = "회원";
     document.querySelector("#signup-form").requestSubmit();

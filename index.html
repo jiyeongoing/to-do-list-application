@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swipe Todo</title>
-    <link rel="manifest" href="manifest.webmanifest?v=19">
-    <link rel="icon" href="icons/app-icon.svg?v=19" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=19">
-    <link rel="stylesheet" href="styles.css?v=19">
-    <script src="app.js?v=19" defer></script>
+    <link rel="manifest" href="manifest.webmanifest?v=20">
+    <link rel="icon" href="icons/app-icon.svg?v=20" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=20">
+    <link rel="stylesheet" href="styles.css?v=20">
+    <script src="app.js?v=20" defer></script>
   </head>
   <body>
     <main class="prototype">
@@ -69,7 +69,7 @@
         <div id="plan-view" class="view">
           <header class="screen-header back-header">
             <div>
-              <h2>계획</h2>
+              <h2 id="plan-title">계획</h2>
             </div>
             <div class="plan-header-actions">
               <button class="back" type="button" data-view="today-view">닫기</button>
@@ -167,14 +167,19 @@
           </header>
 
           <form id="signup-form" class="auth-form">
-            <label class="sr-only" for="signup-email">이메일</label>
-            <div class="email-row">
-              <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
-              <button id="email-check-button" type="button">중복확인</button>
+            <div id="signup-credential-step" class="credential-step">
+              <label class="sr-only" for="signup-email">이메일</label>
+              <div class="email-row">
+                <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
+                <button id="email-check-button" type="button">중복확인</button>
+              </div>
+              <label class="sr-only" for="signup-password">비밀번호</label>
+              <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" required>
+              <label class="sr-only" for="signup-password-confirm">비밀번호 확인</label>
+              <input id="signup-password-confirm" type="password" placeholder="비밀번호 확인" autocomplete="new-password" required>
             </div>
-            <label class="sr-only" for="signup-password">비밀번호</label>
-            <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" required>
             <div id="signup-nickname-step" class="nickname-step" hidden>
+              <p class="auth-thanks">가입해주셔서 감사합니다.<br>별명을 설정해주세요.</p>
               <label class="sr-only" for="signup-nickname">별명</label>
               <input id="signup-nickname" placeholder="별명" autocomplete="nickname">
             </div>
@@ -201,7 +206,6 @@
         <div class="account-actions">
           <button id="open-login-button" type="button" data-view="login-view">로그인</button>
           <button id="open-signup-button" type="button" data-view="signup-view">회원가입</button>
-          <button id="google-auth-button" type="button">Google</button>
           <button id="import-local-button" type="button" hidden>기기 데이터 가져오기</button>
           <button id="logout-button" type="button" hidden>로그아웃</button>
         </div>

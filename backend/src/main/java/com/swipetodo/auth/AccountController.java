@@ -50,6 +50,11 @@ class AccountController {
 		return accountService.login(request, session);
 	}
 
+	@PostMapping("/auth/profile")
+	AccountResponse updateProfile(@Valid @RequestBody ProfileRequest request, HttpSession session) {
+		return accountService.updateProfile(request, session);
+	}
+
 	@GetMapping("/auth/email-check")
 	EmailCheckResponse checkEmail(@RequestParam String email) {
 		return accountService.checkEmail(email);

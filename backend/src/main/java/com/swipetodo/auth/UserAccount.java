@@ -91,6 +91,10 @@ public class UserAccount {
 		this.displayName = displayName;
 	}
 
+	void updateDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	void linkGoogle(String googleProviderId, String email, String displayName) {
 		this.provider = "google";
 		this.providerId = googleProviderId;

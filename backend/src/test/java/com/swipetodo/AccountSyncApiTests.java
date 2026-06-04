@@ -91,6 +91,30 @@ class AccountSyncApiTests {
 	}
 
 	@Test
+	void nicknameCanBeUpdatedAfterSignup() throws Exception {
+		MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/api/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"nick@example.com\",\"password\":\"right-password\",\"nickname\":\"nick\"}"))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getRequest()
+			.getSession(false);
+
+		mockMvc.perform(post("/api/auth/profile")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"nickname\":\"지연\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.displayName").value("지연"));
+
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"nick@example.com\",\"password\":\"right-password\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.displayName").value("지연"));
+	}
+
+	@Test
 	void invalidPasswordIsRejected() throws Exception {
 		mockMvc.perform(post("/api/auth/signup")
 				.contentType(MediaType.APPLICATION_JSON)

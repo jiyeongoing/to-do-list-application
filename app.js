@@ -146,7 +146,7 @@ const loadState = () => {
 let state = loadState();
 let draftList = null;
 let editingDraft = false;
-let signupNicknameStep = false;
+let signupProfileStep = false;
 
 const persist = () => {
   localStorage.setItem(currentStorageKey(), JSON.stringify(state));
@@ -226,13 +226,13 @@ const mergeStates = (baseState, incomingState) => ({
 const renderAccount = () => {
   const guestState = loadGuestState();
   const isSignedIn = account.mode === "account";
+  const displayName = account.displayName || "계정";
   $("#account-status").textContent = isSignedIn
-    ? `${account.displayName || "계정"}에 저장됨`
+    ? `${displayName}에 저장됨`
     : "이 기기에 저장됨";
+  $("#plan-title").textContent = isSignedIn ? `${displayName} 계획` : "계획";
   $("#open-login-button").hidden = isSignedIn;
   $("#open-signup-button").hidden = isSignedIn;
-  $("#google-auth-button").hidden = isSignedIn && account.provider === "google";
-  $("#google-auth-button").textContent = isSignedIn ? "Google 연동" : "Google";
   $("#logout-button").hidden = !isSignedIn;
   $("#import-local-button").hidden = !isSignedIn || !hasUserData(guestState);
 };
@@ -262,6 +262,7 @@ const loginCredentials = () => ({
 const signupCredentials = () => ({
   email: $("#signup-email").value.trim().toLowerCase(),
   password: $("#signup-password").value,
+  passwordConfirm: $("#signup-password-confirm").value,
   nickname: $("#signup-nickname").value.trim()
 });
 
@@ -270,20 +271,59 @@ const clearAuthForms = () => {
   $("#login-password").value = "";
   $("#signup-email").value = "";
   $("#signup-password").value = "";
+  $("#signup-password-confirm").value = "";
   $("#signup-nickname").value = "";
   $("#login-message").textContent = "";
   $("#signup-message").textContent = "";
+  $("#signup-credential-step").hidden = false;
   $("#signup-nickname-step").hidden = true;
   $("#signup-submit-button").textContent = "가입";
-  signupNicknameStep = false;
+  signupProfileStep = false;
 };
 
 const openSignupNicknameStep = () => {
-  signupNicknameStep = true;
+  signupProfileStep = true;
+  $("#signup-credential-step").hidden = true;
   $("#signup-nickname-step").hidden = false;
   $("#signup-submit-button").textContent = "완료";
   showAuthMessage("signup", "별명을 입력해 주세요.");
   $("#signup-nickname").focus();
+};
+
+const updateSignedInNicknameLocally = (nickname) => {
+  account = { ...account, displayName: nickname };
+  persistAccount();
+  renderAccount();
+  return account;
+};
+
+const updateSignedInNickname = async (nickname) => {
+  const response = await callLocalApi("/auth/profile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname })
+  });
+  if (response?.mode !== "account") return null;
+  account = response;
+  persistAccount();
+  renderAccount();
+  return response;
+};
+
+const finishSignup = (displayName) => {
+  const guestState = loadGuestState();
+  const hasGuestData = hasUserData(guestState);
+  const shouldImport = hasGuestData &&
+    typeof window !== "undefined" &&
+    window.confirm("기존 디바이스에 저장된 정보를 가져올까요?");
+  if (shouldImport) {
+    importLocalDataToAccount();
+  } else {
+    persist();
+    showStatus(`${displayName} 계획을 시작해요.`);
+  }
+  clearAuthForms();
+  activateView("today-view");
 };
 
 const submitLoginForm = async (event) => {
@@ -328,38 +368,51 @@ const submitSignupForm = async (event) => {
     showAuthMessage("signup", "비밀번호는 8자 이상이에요.");
     return;
   }
-  if (!signupNicknameStep) {
+  if (credentials.password !== credentials.passwordConfirm) {
+    showAuthMessage("signup", "비밀번호가 같지 않아요.");
+    return;
+  }
+  if (!signupProfileStep) {
+    const temporaryName = credentials.email.split("@")[0];
+    if (typeof window === "undefined") {
+      applyAccount(createLocalTestMemberAccount(credentials.email, temporaryName));
+      openSignupNicknameStep();
+      return;
+    }
+    const response = await callLocalApi("/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.password,
+        nickname: temporaryName
+      })
+    });
+    if (response?.mode !== "account") {
+      showAuthMessage("signup", response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
+      return;
+    }
+    applyAccount(response);
     openSignupNicknameStep();
     return;
   }
+
   const nickname = credentials.nickname.trim();
   if (!nickname) {
     showAuthMessage("signup", "별명을 입력해 주세요.");
     return;
   }
   if (typeof window === "undefined") {
-    applyAccount(createLocalTestMemberAccount(credentials.email, nickname));
-    activateView("today-view");
-    showAuthMessage("signup", "회원가입했어요.");
+    const updatedAccount = updateSignedInNicknameLocally(nickname);
+    finishSignup(updatedAccount.displayName || nickname);
     return;
   }
-  const response = await callLocalApi("/auth/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: credentials.email,
-      password: credentials.password,
-      nickname
-    })
-  });
-  if (response?.mode !== "account") {
-    showAuthMessage("signup", response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
+  const updatedAccount = await updateSignedInNickname(nickname);
+  if (!updatedAccount) {
+    showAuthMessage("signup", "별명을 저장할 수 없어요.");
     return;
   }
-  applyAccount(response);
-  clearAuthForms();
-  activateView("today-view");
-  showStatus("회원가입했어요.");
+  finishSignup(updatedAccount.displayName || nickname);
 };
 
 const checkMemberEmail = async () => {
@@ -378,19 +431,6 @@ const checkMemberEmail = async () => {
     return;
   }
   showAuthMessage("signup", "중복확인을 할 수 없어요.");
-};
-
-const startGoogleAuth = async () => {
-  if (typeof window === "undefined") {
-    showStatus("Google 설정이 필요해요.");
-    return;
-  }
-  const status = await callLocalApi("/auth/google/status");
-  if (!status?.oauthReady || !status.loginUrl) {
-    showStatus("Google 설정이 필요해요.");
-    return;
-  }
-  window.location.href = `${API_BASE_URL}${status.loginUrl}`;
 };
 
 const syncAccountFromServer = async () => {
@@ -1134,7 +1174,6 @@ $("#import-input").addEventListener("change", (event) => {
 $("#login-form").addEventListener("submit", submitLoginForm);
 $("#signup-form").addEventListener("submit", submitSignupForm);
 $("#email-check-button").addEventListener("click", checkMemberEmail);
-$("#google-auth-button").addEventListener("click", startGoogleAuth);
 $("#import-local-button").addEventListener("click", importLocalDataToAccount);
 $("#logout-button").addEventListener("click", signOut);
 
@@ -1153,6 +1192,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=19").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=20").catch(() => {});
   });
 }

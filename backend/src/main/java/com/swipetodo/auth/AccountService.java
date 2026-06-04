@@ -69,6 +69,14 @@ public class AccountService {
 	}
 
 	@Transactional
+	AccountResponse updateProfile(ProfileRequest request, HttpSession session) {
+		UserAccount account = currentAccount(session)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
+		account.updateDisplayName(request.nickname().trim());
+		return AccountResponse.from(account);
+	}
+
+	@Transactional
 	AccountResponse loginOAuth(String provider, Map<String, Object> attributes, HttpSession session) {
 		String normalizedProvider = normalizeProvider(provider);
 		String providerId = firstPresent(attributes, "sub", "id", "email");

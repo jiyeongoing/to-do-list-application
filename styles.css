@@ -725,6 +725,11 @@ button {
   margin-top: 22px;
 }
 
+.credential-step {
+  display: grid;
+  gap: 10px;
+}
+
 .auth-form input,
 .auth-form button {
   min-height: 42px;
@@ -767,6 +772,14 @@ button {
 
 .nickname-step[hidden] {
   display: none;
+}
+
+.auth-thanks {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.45;
 }
 
 @media (max-width: 430px) {
