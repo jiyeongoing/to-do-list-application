@@ -689,12 +689,13 @@ button {
 
 .account-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
 }
 
 .account-actions button {
-  flex: 1;
+  flex: 1 1 calc(50% - 8px);
   min-height: 32px;
   padding: 0 10px;
   border-radius: 10px;
@@ -714,36 +715,55 @@ button {
   display: none;
 }
 
-.member-form {
+.auth-view {
+  padding-bottom: 86px;
+}
+
+.auth-form {
   display: grid;
-  grid-template-columns: 1fr 74px;
-  gap: 7px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 22px;
 }
 
-.member-form[hidden] {
-  display: none;
+.auth-form input,
+.auth-form button,
+.auth-switch {
+  min-height: 42px;
+  border-radius: 14px;
+  font-size: 15px;
 }
 
-.member-form input,
-.member-form button {
+.auth-form input {
   min-width: 0;
-  min-height: 34px;
-  border-radius: 10px;
-  font-size: 12px;
-}
-
-.member-form input {
   border: 1px solid var(--line);
-  padding: 0 10px;
+  padding: 0 14px;
+  background: #fff;
   outline: 0;
 }
 
-.member-form button {
-  padding: 0 11px;
+.auth-form button,
+.auth-switch {
+  padding: 0 14px;
   color: #fff;
   background: var(--ink);
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.email-row {
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  gap: 8px;
+}
+
+.email-row button {
+  font-size: 13px;
+}
+
+.auth-switch {
+  width: 100%;
+  margin-top: 10px;
+  color: #5e5b55;
+  background: var(--surface);
 }
 
 @media (max-width: 430px) {
@@ -758,7 +778,7 @@ button {
     padding: 10px 12px 12px;
   }
 
-  .member-form {
-    grid-template-columns: 1fr 74px;
+  .account-actions button {
+    flex-basis: calc(50% - 8px);
   }
 }

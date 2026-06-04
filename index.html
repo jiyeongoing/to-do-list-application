@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swipe Todo</title>
-    <link rel="manifest" href="manifest.webmanifest?v=17">
-    <link rel="icon" href="icons/app-icon.svg?v=17" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=17">
-    <link rel="stylesheet" href="styles.css?v=17">
-    <script src="app.js?v=17" defer></script>
+    <link rel="manifest" href="manifest.webmanifest?v=18">
+    <link rel="icon" href="icons/app-icon.svg?v=18" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=18">
+    <link rel="stylesheet" href="styles.css?v=18">
+    <script src="app.js?v=18" defer></script>
   </head>
   <body>
     <main class="prototype">
@@ -137,6 +137,51 @@
 
           <div id="list-items" class="items"></div>
         </div>
+
+        <div id="login-view" class="view auth-view">
+          <header class="screen-header back-header">
+            <div>
+              <h2>로그인</h2>
+              <p class="subline">계정에 저장</p>
+            </div>
+            <button class="back" type="button" data-view="today-view">닫기</button>
+          </header>
+
+          <form id="login-form" class="auth-form">
+            <label class="sr-only" for="login-email">이메일</label>
+            <input id="login-email" type="email" placeholder="이메일" autocomplete="email" required>
+            <label class="sr-only" for="login-password">비밀번호</label>
+            <input id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password" required>
+            <button type="submit">로그인</button>
+          </form>
+
+          <button id="go-signup-button" class="auth-switch" type="button" data-view="signup-view">회원가입</button>
+        </div>
+
+        <div id="signup-view" class="view auth-view">
+          <header class="screen-header back-header">
+            <div>
+              <h2>회원가입</h2>
+              <p class="subline">새 계정 만들기</p>
+            </div>
+            <button class="back" type="button" data-view="today-view">닫기</button>
+          </header>
+
+          <form id="signup-form" class="auth-form">
+            <label class="sr-only" for="signup-email">이메일</label>
+            <div class="email-row">
+              <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
+              <button id="email-check-button" type="button">중복확인</button>
+            </div>
+            <label class="sr-only" for="signup-password">비밀번호</label>
+            <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" required>
+            <label class="sr-only" for="signup-nickname">별명</label>
+            <input id="signup-nickname" placeholder="별명" autocomplete="nickname">
+            <button type="submit">가입</button>
+          </form>
+
+          <button id="go-login-button" class="auth-switch" type="button" data-view="login-view">로그인</button>
+        </div>
       </section>
 
       <section class="utility-panel" aria-label="데이터 관리">
@@ -154,22 +199,12 @@
       <section class="account-bar" aria-label="계정 저장">
         <p id="account-status" class="storage-note">이 기기에 저장됨</p>
         <div class="account-actions">
-          <button id="member-login-button" type="button">회원가입/로그인</button>
+          <button id="open-login-button" type="button" data-view="login-view">로그인</button>
+          <button id="open-signup-button" type="button" data-view="signup-view">회원가입</button>
           <button id="google-auth-button" type="button">Google</button>
           <button id="import-local-button" type="button" hidden>기기 데이터 가져오기</button>
           <button id="logout-button" type="button" hidden>로그아웃</button>
         </div>
-        <form id="member-form" class="member-form" hidden>
-          <label class="sr-only" for="member-email">이메일</label>
-          <input id="member-email" type="email" placeholder="이메일" autocomplete="email" required>
-          <button id="email-check-button" type="button">중복확인</button>
-          <label class="sr-only" for="member-password">비밀번호</label>
-          <input id="member-password" type="password" placeholder="비밀번호" autocomplete="current-password" required>
-          <label class="sr-only" for="member-nickname">별명</label>
-          <input id="member-nickname" placeholder="별명" autocomplete="nickname">
-          <button id="member-login-submit" type="submit">로그인</button>
-          <button id="member-signup-submit" type="button">가입</button>
-        </form>
       </section>
     </main>
   </body>

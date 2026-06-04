@@ -222,10 +222,10 @@ const renderAccount = () => {
   $("#account-status").textContent = isSignedIn
     ? `${account.displayName || "계정"}에 저장됨`
     : "이 기기에 저장됨";
-  $("#member-login-button").hidden = isSignedIn;
+  $("#open-login-button").hidden = isSignedIn;
+  $("#open-signup-button").hidden = isSignedIn;
   $("#google-auth-button").hidden = isSignedIn && account.provider === "google";
   $("#google-auth-button").textContent = isSignedIn ? "Google 연동" : "Google";
-  $("#member-form").hidden = true;
   $("#logout-button").hidden = !isSignedIn;
   $("#import-local-button").hidden = !isSignedIn || !hasUserData(guestState);
 };
@@ -247,28 +247,31 @@ const applyAccount = (nextAccount) => {
 	refreshActiveView();
 };
 
-const openMemberForm = () => {
-  $("#member-form").hidden = false;
-  $("#member-email").focus();
-};
-
-const memberCredentials = () => ({
-  email: $("#member-email").value.trim().toLowerCase(),
-  password: $("#member-password").value,
-  nickname: $("#member-nickname").value.trim()
+const loginCredentials = () => ({
+  email: $("#login-email").value.trim().toLowerCase(),
+  password: $("#login-password").value
 });
 
-const clearMemberForm = () => {
-  $("#member-email").value = "";
-  $("#member-password").value = "";
-  $("#member-nickname").value = "";
+const signupCredentials = () => ({
+  email: $("#signup-email").value.trim().toLowerCase(),
+  password: $("#signup-password").value,
+  nickname: $("#signup-nickname").value.trim()
+});
+
+const clearAuthForms = () => {
+  $("#login-email").value = "";
+  $("#login-password").value = "";
+  $("#signup-email").value = "";
+  $("#signup-password").value = "";
+  $("#signup-nickname").value = "";
 };
 
-const submitMemberForm = async (event) => {
+const submitLoginForm = async (event) => {
   event.preventDefault();
-  const credentials = memberCredentials();
+  const credentials = loginCredentials();
   if (typeof window === "undefined") {
-    applyAccount(createLocalTestMemberAccount(credentials.email, credentials.nickname));
+    applyAccount(createLocalTestMemberAccount(credentials.email, credentials.email.split("@")[0]));
+    activateView("today-view");
     showStatus("로그인했어요.");
     return;
   }
@@ -285,12 +288,14 @@ const submitMemberForm = async (event) => {
     return;
   }
   applyAccount(response);
-  clearMemberForm();
+  clearAuthForms();
+  activateView("today-view");
   showStatus("로그인했어요.");
 };
 
-const signUpMember = async () => {
-  const credentials = memberCredentials();
+const submitSignupForm = async (event) => {
+  event.preventDefault();
+  const credentials = signupCredentials();
   const nickname = credentials.nickname || credentials.email.split("@")[0];
   if (credentials.password.length < 8) {
     showStatus("비밀번호는 8자 이상이에요.");
@@ -298,6 +303,7 @@ const signUpMember = async () => {
   }
   if (typeof window === "undefined") {
     applyAccount(createLocalTestMemberAccount(credentials.email, nickname));
+    activateView("today-view");
     showStatus("회원가입했어요.");
     return;
   }
@@ -315,12 +321,13 @@ const signUpMember = async () => {
     return;
   }
   applyAccount(response);
-  clearMemberForm();
+  clearAuthForms();
+  activateView("today-view");
   showStatus("회원가입했어요.");
 };
 
 const checkMemberEmail = async () => {
-  const email = $("#member-email").value.trim().toLowerCase();
+  const email = $("#signup-email").value.trim().toLowerCase();
   if (!email) {
     showStatus("이메일을 입력해 주세요.");
     return;
@@ -1088,10 +1095,9 @@ $("#import-input").addEventListener("change", (event) => {
   reader.readAsText(file);
 });
 
-$("#member-login-button").addEventListener("click", openMemberForm);
-$("#member-form").addEventListener("submit", submitMemberForm);
+$("#login-form").addEventListener("submit", submitLoginForm);
+$("#signup-form").addEventListener("submit", submitSignupForm);
 $("#email-check-button").addEventListener("click", checkMemberEmail);
-$("#member-signup-submit").addEventListener("click", signUpMember);
 $("#google-auth-button").addEventListener("click", startGoogleAuth);
 $("#import-local-button").addEventListener("click", importLocalDataToAccount);
 $("#logout-button").addEventListener("click", signOut);
@@ -1111,6 +1117,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=17").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=18").catch(() => {});
   });
 }
