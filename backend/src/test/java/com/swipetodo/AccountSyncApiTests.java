@@ -42,7 +42,7 @@ class AccountSyncApiTests {
 	@Test
 	void signupAndLoginCreateAuthenticatedSession() throws Exception {
 		String signupPayload = """
-			{ "email": "real@example.com", "password": "real-password", "displayName": "진짜회원" }
+			{ "email": "real@example.com", "password": "real-password", "nickname": "진짜회원" }
 			""";
 		String loginPayload = """
 			{ "email": "real@example.com", "password": "real-password" }
@@ -81,13 +81,31 @@ class AccountSyncApiTests {
 	void invalidPasswordIsRejected() throws Exception {
 		mockMvc.perform(post("/api/auth/signup")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"email\":\"wrong@example.com\",\"password\":\"right-password\",\"displayName\":\"회원\"}"))
+				.content("{\"email\":\"wrong@example.com\",\"password\":\"right-password\",\"nickname\":\"회원\"}"))
 			.andExpect(status().isOk());
 
 		mockMvc.perform(post("/api/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"email\":\"wrong@example.com\",\"password\":\"wrong-password\"}"))
 			.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void emailAvailabilityCanBeChecked() throws Exception {
+		mockMvc.perform(post("/api/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"email\":\"check@example.com\",\"password\":\"right-password\",\"nickname\":\"회원\"}"))
+			.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/auth/email-check")
+				.param("email", "check@example.com"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.available").value(false));
+
+		mockMvc.perform(get("/api/auth/email-check")
+				.param("email", "unused@example.com"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.available").value(true));
 	}
 
 	@Test
@@ -111,7 +129,7 @@ class AccountSyncApiTests {
 	void googleOAuthLinksToExistingLocalAccountByEmail() throws Exception {
 		mockMvc.perform(post("/api/auth/signup")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"email\":\"link@example.com\",\"password\":\"local-password\",\"displayName\":\"로컬회원\"}"))
+				.content("{\"email\":\"link@example.com\",\"password\":\"local-password\",\"nickname\":\"로컬회원\"}"))
 			.andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/me")

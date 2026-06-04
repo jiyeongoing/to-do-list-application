@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swipe Todo</title>
-    <link rel="manifest" href="manifest.webmanifest?v=15">
-    <link rel="icon" href="icons/app-icon.svg?v=15" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=15">
-    <link rel="stylesheet" href="styles.css?v=15">
-    <script src="app.js?v=15" defer></script>
+    <link rel="manifest" href="manifest.webmanifest?v=16">
+    <link rel="icon" href="icons/app-icon.svg?v=16" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=16">
+    <link rel="stylesheet" href="styles.css?v=16">
+    <script src="app.js?v=16" defer></script>
   </head>
   <body>
     <main class="prototype">
@@ -162,10 +162,11 @@
         <form id="member-form" class="member-form" hidden>
           <label class="sr-only" for="member-email">이메일</label>
           <input id="member-email" type="email" placeholder="이메일" autocomplete="email" required>
+          <button id="email-check-button" type="button">중복확인</button>
           <label class="sr-only" for="member-password">비밀번호</label>
           <input id="member-password" type="password" placeholder="비밀번호" autocomplete="current-password" required>
-          <label class="sr-only" for="member-name">이름</label>
-          <input id="member-name" placeholder="이름" autocomplete="name">
+          <label class="sr-only" for="member-nickname">별명</label>
+          <input id="member-nickname" placeholder="별명" autocomplete="nickname">
           <button id="member-login-submit" type="submit">로그인</button>
           <button id="member-signup-submit" type="button">가입</button>
         </form>

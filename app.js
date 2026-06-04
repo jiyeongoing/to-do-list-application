@@ -162,9 +162,12 @@ const callLocalApi = async (path, options = {}) => {
 			credentials: "include",
 			...options
 		});
-		if (!response.ok) return null;
 		const text = await response.text();
-		return text ? JSON.parse(text) : null;
+		const payload = text ? JSON.parse(text) : null;
+		if (!response.ok) {
+			return { error: true, status: response.status, payload };
+		}
+		return payload;
 	} catch {
 		return null;
 	}
@@ -252,20 +255,20 @@ const openMemberForm = () => {
 const memberCredentials = () => ({
   email: $("#member-email").value.trim().toLowerCase(),
   password: $("#member-password").value,
-  displayName: $("#member-name").value.trim()
+  nickname: $("#member-nickname").value.trim()
 });
 
 const clearMemberForm = () => {
   $("#member-email").value = "";
   $("#member-password").value = "";
-  $("#member-name").value = "";
+  $("#member-nickname").value = "";
 };
 
 const submitMemberForm = async (event) => {
   event.preventDefault();
   const credentials = memberCredentials();
   if (typeof window === "undefined") {
-    applyAccount(createLocalTestMemberAccount(credentials.email, credentials.displayName));
+    applyAccount(createLocalTestMemberAccount(credentials.email, credentials.nickname));
     showStatus("로그인했어요.");
     return;
   }
@@ -278,7 +281,7 @@ const submitMemberForm = async (event) => {
     })
   });
   if (response?.mode !== "account") {
-    showStatus("로그인 정보를 확인해 주세요.");
+    showStatus(response?.status === 401 ? "이메일/비밀번호를 확인해 주세요." : "로그인할 수 없어요.");
     return;
   }
   applyAccount(response);
@@ -288,9 +291,13 @@ const submitMemberForm = async (event) => {
 
 const signUpMember = async () => {
   const credentials = memberCredentials();
-  const displayName = credentials.displayName || credentials.email.split("@")[0];
+  const nickname = credentials.nickname || credentials.email.split("@")[0];
+  if (credentials.password.length < 8) {
+    showStatus("비밀번호는 8자 이상이에요.");
+    return;
+  }
   if (typeof window === "undefined") {
-    applyAccount(createLocalTestMemberAccount(credentials.email, displayName));
+    applyAccount(createLocalTestMemberAccount(credentials.email, nickname));
     showStatus("회원가입했어요.");
     return;
   }
@@ -300,16 +307,34 @@ const signUpMember = async () => {
     body: JSON.stringify({
       email: credentials.email,
       password: credentials.password,
-      displayName
+      nickname
     })
   });
   if (response?.mode !== "account") {
-    showStatus("가입 정보를 확인해 주세요.");
+    showStatus(response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
     return;
   }
   applyAccount(response);
   clearMemberForm();
   showStatus("회원가입했어요.");
+};
+
+const checkMemberEmail = async () => {
+  const email = $("#member-email").value.trim().toLowerCase();
+  if (!email) {
+    showStatus("이메일을 입력해 주세요.");
+    return;
+  }
+  const response = await callLocalApi(`/auth/email-check?email=${encodeURIComponent(email)}`);
+  if (response?.available === true) {
+    showStatus("사용 가능한 이메일이에요.");
+    return;
+  }
+  if (response?.available === false) {
+    showStatus("이미 가입된 이메일이에요.");
+    return;
+  }
+  showStatus("중복확인을 할 수 없어요.");
 };
 
 const startGoogleAuth = async () => {
@@ -1065,6 +1090,7 @@ $("#import-input").addEventListener("change", (event) => {
 
 $("#member-login-button").addEventListener("click", openMemberForm);
 $("#member-form").addEventListener("submit", submitMemberForm);
+$("#email-check-button").addEventListener("click", checkMemberEmail);
 $("#member-signup-submit").addEventListener("click", signUpMember);
 $("#google-auth-button").addEventListener("click", startGoogleAuth);
 $("#import-local-button").addEventListener("click", importLocalDataToAccount);
@@ -1085,6 +1111,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=15").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=16").catch(() => {});
   });
 }

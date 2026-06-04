@@ -45,10 +45,16 @@ public class AccountService {
 		UserAccount account = repository.save(UserAccount.local(
 			email,
 			passwordEncoder.encode(request.password()),
-			request.displayName().trim()
+			request.nickname().trim()
 		));
 		signIn(session, account);
 		return AccountResponse.from(account);
+	}
+
+	@Transactional(readOnly = true)
+	EmailCheckResponse checkEmail(String email) {
+		String normalizedEmail = normalizeEmail(email);
+		return new EmailCheckResponse(normalizedEmail, !repository.existsByEmail(normalizedEmail));
 	}
 
 	@Transactional(readOnly = true)
@@ -135,7 +141,7 @@ public class AccountService {
 		return value == null ? "" : value.toString();
 	}
 
-	private String normalizeEmail(String email) {
+	String normalizeEmail(String email) {
 		return email == null ? "" : email.trim().toLowerCase();
 	}
 }

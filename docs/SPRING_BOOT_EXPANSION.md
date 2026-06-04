@@ -78,6 +78,7 @@ src/main/java/com/swipetodo
 | POST | `/api/plans/lists/{id}/copy` | 목적별 리스트 복사 |
 | POST | `/api/plans/lists/paste` | 선택 날짜에 리스트 붙여넣기 |
 | GET | `/api/me` | 로그인 사용자와 저장 방식 조회 |
+| GET | `/api/auth/email-check?email=` | 이메일 중복 확인 |
 | POST | `/api/auth/signup` | 이메일/비밀번호 회원가입 |
 | POST | `/api/auth/login` | 이메일/비밀번호 로그인 |
 | POST | `/api/logout` | 서버 세션 로그아웃 |

@@ -46,4 +46,12 @@ class AccountPersistenceTests {
 		assertThat(response.email()).isEqualTo("login@example.com");
 		assertThat(session.getAttribute(AccountService.SESSION_ACCOUNT_ID)).isNotNull();
 	}
+
+	@Test
+	void emailCheckReturnsAvailability() {
+		service.signup(new SignupRequest("used@example.com", "right-password", "회원"), new MockHttpSession());
+
+		assertThat(service.checkEmail("used@example.com").available()).isFalse();
+		assertThat(service.checkEmail("new@example.com").available()).isTrue();
+	}
 }

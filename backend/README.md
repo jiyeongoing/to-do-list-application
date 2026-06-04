@@ -31,6 +31,7 @@ Git에는 포함하지 않습니다.
 | Method | Endpoint | 설명 |
 | --- | --- | --- |
 | GET | `/api/me` | 현재 저장 모드 조회 |
+| GET | `/api/auth/email-check?email=` | 이메일 중복 확인 |
 | POST | `/api/auth/signup` | 이메일/비밀번호 회원가입 |
 | POST | `/api/auth/login` | 이메일/비밀번호 로그인 |
 | POST | `/api/logout` | 서버 세션 로그아웃 |

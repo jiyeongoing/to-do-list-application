@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,6 +48,11 @@ class AccountController {
 	@PostMapping("/auth/login")
 	AccountResponse login(@Valid @RequestBody LoginRequest request, HttpSession session) {
 		return accountService.login(request, session);
+	}
+
+	@GetMapping("/auth/email-check")
+	EmailCheckResponse checkEmail(@RequestParam String email) {
+		return accountService.checkEmail(email);
 	}
 
 	@GetMapping("/auth/google/status")

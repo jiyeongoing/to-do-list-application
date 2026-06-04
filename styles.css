@@ -716,7 +716,7 @@ button {
 
 .member-form {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 74px;
   gap: 7px;
   margin-top: 8px;
 }
@@ -759,6 +759,6 @@ button {
   }
 
   .member-form {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 74px;
   }
 }

@@ -215,8 +215,9 @@ const createDocument = () => {
     ["google-auth-button"],
     ["member-form"],
     ["member-email"],
+    ["email-check-button"],
     ["member-password"],
-    ["member-name"],
+    ["member-nickname"],
     ["member-signup-submit"],
     ["import-local-button"],
     ["logout-button"],
@@ -301,7 +302,9 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
   assert.match(htmlCode, /<section class="account-bar" aria-label="계정 저장">/);
   assert.match(htmlCode, /id="member-login-button"/);
   assert.match(htmlCode, /id="google-auth-button"/);
+  assert.match(htmlCode, /id="email-check-button"/);
   assert.match(htmlCode, /id="member-password"/);
+  assert.match(htmlCode, /placeholder="별명"/);
   assert.match(cssCode, /\.account-bar\s*{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
 });
 
@@ -313,7 +316,7 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     document.querySelector("#member-login-button").dispatchEvent({ type: "click" });
     document.querySelector("#member-email").value = "member@example.com";
     document.querySelector("#member-password").value = "safe-password";
-    document.querySelector("#member-name").value = "회원";
+    document.querySelector("#member-nickname").value = "회원";
     document.querySelector("#member-signup-submit").dispatchEvent({ type: "click" });
 
     assert.equal(account.mode, "account");
@@ -335,7 +338,7 @@ test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합�
     document.querySelector("#member-login-button").dispatchEvent({ type: "click" });
     document.querySelector("#member-email").value = "member@example.com";
     document.querySelector("#member-password").value = "safe-password";
-    document.querySelector("#member-name").value = "회원";
+    document.querySelector("#member-nickname").value = "회원";
     document.querySelector("#member-signup-submit").dispatchEvent({ type: "click" });
     document.querySelector("#import-local-button").dispatchEvent({ type: "click" });
     document.querySelector("#today-input").value = "계정 할 일";
