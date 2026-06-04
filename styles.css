@@ -715,6 +715,10 @@ button {
   display: none;
 }
 
+.nickname-highlight {
+  color: #7c5cff;
+}
+
 .auth-view {
   padding-bottom: 86px;
 }
@@ -775,10 +779,14 @@ button {
 }
 
 .auth-thanks {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   color: var(--ink);
+  background: var(--surface);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.45;
 }
 

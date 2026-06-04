@@ -182,6 +182,13 @@ const showAuthMessage = (target, message) => {
   showStatus(message);
 };
 
+const escapeHtml = (value) => String(value)
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#039;");
+
 const hasUserData = (candidate) => Boolean(
   candidate.today.length ||
   candidate.daily.length ||
@@ -228,8 +235,14 @@ const renderAccount = () => {
   $("#account-status").textContent = isSignedIn
     ? `${displayName}에 저장됨`
     : "이 기기에 저장됨";
-  $("#today-title").textContent = isSignedIn ? `${displayName}의 오늘` : "오늘";
-  $("#plan-title").textContent = isSignedIn ? `${displayName} 계획` : "계획";
+  if (isSignedIn) {
+    const safeDisplayName = escapeHtml(displayName);
+    $("#today-title").innerHTML = `<span class="nickname-highlight">${safeDisplayName}</span>의 오늘`;
+    $("#plan-title").innerHTML = `<span class="nickname-highlight">${safeDisplayName}</span>의 계획`;
+  } else {
+    $("#today-title").textContent = "오늘";
+    $("#plan-title").textContent = "계획";
+  }
   $("#open-login-button").hidden = isSignedIn;
   $("#open-signup-button").hidden = isSignedIn;
   $("#logout-button").hidden = !isSignedIn;
@@ -450,12 +463,17 @@ const importLocalDataToAccount = () => {
 };
 
 const signOut = () => {
+  const signedInStorageKey = account.mode === "account" ? accountStorageKey() : null;
+  callLocalApi("/logout", { method: "POST" });
+  if (signedInStorageKey) localStorage.removeItem(signedInStorageKey);
+  localStorage.removeItem(STORAGE_KEY);
   account = createGuestAccount();
   persistAccount();
-  state = loadState();
-  showStatus("게스트 저장으로 전환했어요.");
+  state = createEmptyState();
+  persist();
+  showStatus("로그아웃했어요.");
   renderAccount();
-  refreshActiveView();
+  activateView("today-view");
 };
 
 const formatDate = (dateKey, options = {}) => {
@@ -1185,6 +1203,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=21").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=22").catch(() => {});
   });
 }

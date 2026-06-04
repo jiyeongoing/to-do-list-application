@@ -266,6 +266,9 @@ const runAppTest = (body) => {
       },
       setItem(key, value) {
         this.store[key] = String(value);
+      },
+      removeItem(key) {
+        delete this.store[key];
       }
     }
   };
@@ -331,12 +334,12 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
-  assert.match(htmlCode, /app\.js\?v=21/);
-  assert.match(htmlCode, /styles\.css\?v=21/);
-  assert.match(appCode, /service-worker\.js\?v=21/);
-  assert.match(serviceWorkerCode, /swipe-todo-v21/);
-  assert.match(serviceWorkerCode, /app\.js\?v=21/);
-  assert.match(serviceWorkerCode, /styles\.css\?v=21/);
+  assert.match(htmlCode, /app\.js\?v=22/);
+  assert.match(htmlCode, /styles\.css\?v=22/);
+  assert.match(appCode, /service-worker\.js\?v=22/);
+  assert.match(serviceWorkerCode, /swipe-todo-v22/);
+  assert.match(serviceWorkerCode, /app\.js\?v=22/);
+  assert.match(serviceWorkerCode, /styles\.css\?v=22/);
 });
 
 test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
@@ -387,9 +390,35 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     assert.equal(document.querySelector("#today-view").classList.contains("active"), true);
     assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
     assert.equal(document.querySelector("#account-status").textContent, "회원에 저장됨");
-    assert.equal(document.querySelector("#today-title").textContent, "회원의 오늘");
-    assert.equal(document.querySelector("#plan-title").textContent, "회원 계획");
+    assert.equal(document.querySelector("#today-title").innerHTML, '<span class="nickname-highlight">회원</span>의 오늘');
+    assert.equal(document.querySelector("#plan-title").innerHTML, '<span class="nickname-highlight">회원</span>의 계획');
     assert.equal(document.querySelector("#import-local-button").hidden, false);
+  `);
+});
+
+test("로그아웃하면 계정 데이터와 게스트 데이터가 비워진다", () => {
+  runAppTest(`
+    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
+    document.querySelector("#signup-email").value = "member@example.com";
+    document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-password-confirm").value = "safe-password";
+    document.querySelector("#signup-form").requestSubmit();
+    document.querySelector("#profile-nickname").value = "회원";
+    document.querySelector("#profile-form").requestSubmit();
+    document.querySelector("#today-input").value = "계정 할 일";
+    document.querySelector("#today-form").requestSubmit();
+
+    const signedInKey = accountStorageKey();
+    assert.equal(JSON.parse(localStorage.getItem(signedInKey)).today[0].title, "계정 할 일");
+
+    document.querySelector("#logout-button").dispatchEvent({ type: "click" });
+
+    assert.equal(account.mode, "guest");
+    assert.equal(localStorage.getItem(signedInKey), null);
+    assert.ok(fetchCalls.some((call) => call.url.endsWith("/logout") && call.options.method === "POST"));
+    assert.deepEqual(state.today, []);
+    assert.equal(document.querySelector("#today-title").textContent, "오늘");
+    assert.equal(document.querySelector("#plan-title").textContent, "계획");
   `);
 });
 
