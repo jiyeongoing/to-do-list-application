@@ -221,6 +221,8 @@ const createDocument = () => {
 };
 
 const appCode = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
+const htmlCode = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+const cssCode = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 
 const runAppTest = (body) => {
   const document = createDocument();
@@ -287,6 +289,12 @@ test("게스트 사용자는 기존처럼 이 기기에 저장한다", () => {
     assert.equal(saved.today[0].title, "게스트 할 일");
     assert.equal(document.querySelector("#account-status").textContent, "이 기기에 저장됨");
   `);
+});
+
+test("계정 버튼은 하단 고정 영역에 노출된다", () => {
+  assert.match(htmlCode, /<section class="account-bar" aria-label="계정 저장">/);
+  assert.match(htmlCode, /id="google-login-button"/);
+  assert.match(cssCode, /\.account-bar\s*{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
 });
 
 test("Google 로그인 후 계정 저장으로 전환한다", () => {

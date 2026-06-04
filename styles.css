@@ -40,13 +40,14 @@ button {
   align-items: center;
   min-height: 100vh;
   background: var(--paper);
+  padding-bottom: calc(82px + env(safe-area-inset-bottom));
 }
 
 .phone {
   position: relative;
   flex: 1;
   width: min(100%, 560px);
-  min-height: calc(100vh - 82px);
+  min-height: calc(100vh - 150px);
   overflow-x: hidden;
   background: var(--paper);
   padding: calc(22px + env(safe-area-inset-top)) 18px 24px;
@@ -630,6 +631,7 @@ button {
 
 .utility-panel {
   width: min(100%, 400px);
+  padding: 10px 12px 12px;
   color: var(--soft-ink);
   font-size: 12px;
   text-align: center;
@@ -663,26 +665,49 @@ button {
   margin: 0;
 }
 
-.account-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 7px;
-  margin-top: 8px;
+.account-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -10px 24px rgba(23, 23, 22, 0.07);
+  backdrop-filter: blur(14px);
 }
 
-.account-actions .storage-note {
-  width: 100%;
+.account-bar .storage-note {
+  margin-bottom: 7px;
+  color: var(--soft-ink);
+  font-size: 12px;
+  text-align: center;
+}
+
+.account-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 .account-actions button {
+  flex: 1;
   min-height: 32px;
   padding: 0 10px;
   border-radius: 10px;
-  color: #5e5b55;
-  background: var(--surface);
+  color: #fff;
+  background: var(--ink);
   font-size: 12px;
   font-weight: 700;
+}
+
+#import-local-button,
+#logout-button {
+  color: #5e5b55;
+  background: var(--surface);
 }
 
 .account-actions button[hidden] {
@@ -692,12 +717,12 @@ button {
 @media (max-width: 430px) {
   .phone {
     width: 100%;
-    min-height: calc(100vh - 82px);
+    min-height: calc(100vh - 150px);
     padding-top: calc(22px + env(safe-area-inset-top));
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
   }
 
   .utility-panel {
-    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+    padding: 10px 12px 12px;
   }
 }

@@ -1013,6 +1013,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=13").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=14").catch(() => {});
   });
 }
