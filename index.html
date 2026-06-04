@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swipe Todo</title>
-    <link rel="manifest" href="manifest.webmanifest?v=18">
-    <link rel="icon" href="icons/app-icon.svg?v=18" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=18">
-    <link rel="stylesheet" href="styles.css?v=18">
-    <script src="app.js?v=18" defer></script>
+    <link rel="manifest" href="manifest.webmanifest?v=19">
+    <link rel="icon" href="icons/app-icon.svg?v=19" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=19">
+    <link rel="stylesheet" href="styles.css?v=19">
+    <script src="app.js?v=19" defer></script>
   </head>
   <body>
     <main class="prototype">
@@ -154,8 +154,7 @@
             <input id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password" required>
             <button type="submit">로그인</button>
           </form>
-
-          <button id="go-signup-button" class="auth-switch" type="button" data-view="signup-view">회원가입</button>
+          <p id="login-message" class="auth-message" aria-live="polite"></p>
         </div>
 
         <div id="signup-view" class="view auth-view">
@@ -175,12 +174,13 @@
             </div>
             <label class="sr-only" for="signup-password">비밀번호</label>
             <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" required>
-            <label class="sr-only" for="signup-nickname">별명</label>
-            <input id="signup-nickname" placeholder="별명" autocomplete="nickname">
-            <button type="submit">가입</button>
+            <div id="signup-nickname-step" class="nickname-step" hidden>
+              <label class="sr-only" for="signup-nickname">별명</label>
+              <input id="signup-nickname" placeholder="별명" autocomplete="nickname">
+            </div>
+            <button id="signup-submit-button" type="submit">가입</button>
           </form>
-
-          <button id="go-login-button" class="auth-switch" type="button" data-view="login-view">로그인</button>
+          <p id="signup-message" class="auth-message" aria-live="polite"></p>
         </div>
       </section>
 

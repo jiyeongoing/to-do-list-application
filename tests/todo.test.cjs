@@ -223,17 +223,17 @@ const createDocument = () => {
     ["signup-email"],
     ["email-check-button"],
     ["signup-password"],
+    ["signup-nickname-step"],
     ["signup-nickname"],
-    ["go-signup-button"],
-    ["go-login-button"],
+    ["signup-submit-button"],
+    ["login-message"],
+    ["signup-message"],
     ["import-local-button"],
     ["logout-button"],
     ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
   document.querySelector("#open-login-button").setAttribute("data-view", "login-view");
   document.querySelector("#open-signup-button").setAttribute("data-view", "signup-view");
-  document.querySelector("#go-signup-button").setAttribute("data-view", "signup-view");
-  document.querySelector("#go-login-button").setAttribute("data-view", "login-view");
   document.register("phone", "phone");
   return document;
 };
@@ -324,12 +324,12 @@ test("계정 버튼은 하단 고정 영역에 노출된다", () => {
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
-  assert.match(htmlCode, /app\.js\?v=18/);
-  assert.match(htmlCode, /styles\.css\?v=18/);
-  assert.match(appCode, /service-worker\.js\?v=18/);
-  assert.match(serviceWorkerCode, /swipe-todo-v18/);
-  assert.match(serviceWorkerCode, /app\.js\?v=18/);
-  assert.match(serviceWorkerCode, /styles\.css\?v=18/);
+  assert.match(htmlCode, /app\.js\?v=19/);
+  assert.match(htmlCode, /styles\.css\?v=19/);
+  assert.match(appCode, /service-worker\.js\?v=19/);
+  assert.match(serviceWorkerCode, /swipe-todo-v19/);
+  assert.match(serviceWorkerCode, /app\.js\?v=19/);
+  assert.match(serviceWorkerCode, /styles\.css\?v=19/);
 });
 
 test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
@@ -338,9 +338,24 @@ test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
     assert.equal(document.querySelector("#login-view").classList.contains("active"), true);
     assert.equal(document.querySelector("#signup-view").classList.contains("active"), false);
 
-    document.dispatchEvent({ type: "click", target: document.querySelector("#go-signup-button") });
+    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
     assert.equal(document.querySelector("#login-view").classList.contains("active"), false);
     assert.equal(document.querySelector("#signup-view").classList.contains("active"), true);
+  `);
+});
+
+test("회원가입 화면은 중복확인과 별명 입력 단계를 안내한다", () => {
+  runAppTest(`
+    document.querySelector("#email-check-button").dispatchEvent({ type: "click" });
+    assert.equal(document.querySelector("#signup-message").textContent, "이메일을 입력해 주세요.");
+
+    document.querySelector("#signup-email").value = "member@example.com";
+    document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-form").requestSubmit();
+
+    assert.equal(document.querySelector("#signup-nickname-step").hidden, false);
+    assert.equal(document.querySelector("#signup-submit-button").textContent, "완료");
+    assert.equal(document.querySelector("#signup-message").textContent, "별명을 입력해 주세요.");
   `);
 });
 
@@ -352,6 +367,7 @@ test("회원가입 후 계정 저장으로 전환한다", () => {
     document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
     document.querySelector("#signup-email").value = "member@example.com";
     document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-form").requestSubmit();
     document.querySelector("#signup-nickname").value = "회원";
     document.querySelector("#signup-form").requestSubmit();
 
@@ -375,6 +391,7 @@ test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합�
     document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
     document.querySelector("#signup-email").value = "member@example.com";
     document.querySelector("#signup-password").value = "safe-password";
+    document.querySelector("#signup-form").requestSubmit();
     document.querySelector("#signup-nickname").value = "회원";
     document.querySelector("#signup-form").requestSubmit();
     document.querySelector("#import-local-button").dispatchEvent({ type: "click" });

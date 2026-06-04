@@ -3,7 +3,9 @@ package com.swipetodo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +39,17 @@ class AccountSyncApiTests {
 		mockMvc.perform(get("/api/auth/google/status"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.oauthReady").value(false));
+	}
+
+	@Test
+	void authApiAllowsLocalFrontendCorsRequests() throws Exception {
+		mockMvc.perform(options("/api/auth/signup")
+				.header("Origin", "http://localhost:4173")
+				.header("Access-Control-Request-Method", "POST")
+				.header("Access-Control-Request-Headers", "content-type"))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4173"))
+			.andExpect(header().string("Access-Control-Allow-Credentials", "true"));
 	}
 
 	@Test

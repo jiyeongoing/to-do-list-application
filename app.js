@@ -146,6 +146,7 @@ const loadState = () => {
 let state = loadState();
 let draftList = null;
 let editingDraft = false;
+let signupNicknameStep = false;
 
 const persist = () => {
   localStorage.setItem(currentStorageKey(), JSON.stringify(state));
@@ -175,6 +176,12 @@ const callLocalApi = async (path, options = {}) => {
 
 const showStatus = (message) => {
   $("#status-message").textContent = message;
+};
+
+const showAuthMessage = (target, message) => {
+  const node = $(`#${target}-message`);
+  if (node) node.textContent = message;
+  showStatus(message);
 };
 
 const hasUserData = (candidate) => Boolean(
@@ -264,15 +271,32 @@ const clearAuthForms = () => {
   $("#signup-email").value = "";
   $("#signup-password").value = "";
   $("#signup-nickname").value = "";
+  $("#login-message").textContent = "";
+  $("#signup-message").textContent = "";
+  $("#signup-nickname-step").hidden = true;
+  $("#signup-submit-button").textContent = "가입";
+  signupNicknameStep = false;
+};
+
+const openSignupNicknameStep = () => {
+  signupNicknameStep = true;
+  $("#signup-nickname-step").hidden = false;
+  $("#signup-submit-button").textContent = "완료";
+  showAuthMessage("signup", "별명을 입력해 주세요.");
+  $("#signup-nickname").focus();
 };
 
 const submitLoginForm = async (event) => {
   event.preventDefault();
   const credentials = loginCredentials();
+  if (!credentials.email || !credentials.password) {
+    showAuthMessage("login", "이메일과 비밀번호를 입력해 주세요.");
+    return;
+  }
   if (typeof window === "undefined") {
     applyAccount(createLocalTestMemberAccount(credentials.email, credentials.email.split("@")[0]));
     activateView("today-view");
-    showStatus("로그인했어요.");
+    showAuthMessage("login", "로그인했어요.");
     return;
   }
   const response = await callLocalApi("/auth/login", {
@@ -284,7 +308,7 @@ const submitLoginForm = async (event) => {
     })
   });
   if (response?.mode !== "account") {
-    showStatus(response?.status === 401 ? "이메일/비밀번호를 확인해 주세요." : "로그인할 수 없어요.");
+    showAuthMessage("login", response?.status === 401 ? "이메일/비밀번호를 확인해 주세요." : "로그인할 수 없어요.");
     return;
   }
   applyAccount(response);
@@ -296,15 +320,27 @@ const submitLoginForm = async (event) => {
 const submitSignupForm = async (event) => {
   event.preventDefault();
   const credentials = signupCredentials();
-  const nickname = credentials.nickname || credentials.email.split("@")[0];
+  if (!credentials.email || !credentials.password) {
+    showAuthMessage("signup", "이메일과 비밀번호를 입력해 주세요.");
+    return;
+  }
   if (credentials.password.length < 8) {
-    showStatus("비밀번호는 8자 이상이에요.");
+    showAuthMessage("signup", "비밀번호는 8자 이상이에요.");
+    return;
+  }
+  if (!signupNicknameStep) {
+    openSignupNicknameStep();
+    return;
+  }
+  const nickname = credentials.nickname.trim();
+  if (!nickname) {
+    showAuthMessage("signup", "별명을 입력해 주세요.");
     return;
   }
   if (typeof window === "undefined") {
     applyAccount(createLocalTestMemberAccount(credentials.email, nickname));
     activateView("today-view");
-    showStatus("회원가입했어요.");
+    showAuthMessage("signup", "회원가입했어요.");
     return;
   }
   const response = await callLocalApi("/auth/signup", {
@@ -317,7 +353,7 @@ const submitSignupForm = async (event) => {
     })
   });
   if (response?.mode !== "account") {
-    showStatus(response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
+    showAuthMessage("signup", response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
     return;
   }
   applyAccount(response);
@@ -329,19 +365,19 @@ const submitSignupForm = async (event) => {
 const checkMemberEmail = async () => {
   const email = $("#signup-email").value.trim().toLowerCase();
   if (!email) {
-    showStatus("이메일을 입력해 주세요.");
+    showAuthMessage("signup", "이메일을 입력해 주세요.");
     return;
   }
   const response = await callLocalApi(`/auth/email-check?email=${encodeURIComponent(email)}`);
   if (response?.available === true) {
-    showStatus("사용 가능한 이메일이에요.");
+    showAuthMessage("signup", "사용 가능한 이메일이에요.");
     return;
   }
   if (response?.available === false) {
-    showStatus("이미 가입된 이메일이에요.");
+    showAuthMessage("signup", "이미 가입된 이메일이에요.");
     return;
   }
-  showStatus("중복확인을 할 수 없어요.");
+  showAuthMessage("signup", "중복확인을 할 수 없어요.");
 };
 
 const startGoogleAuth = async () => {
@@ -1117,6 +1153,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=18").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=19").catch(() => {});
   });
 }

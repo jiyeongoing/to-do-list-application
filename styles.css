@@ -726,8 +726,7 @@ button {
 }
 
 .auth-form input,
-.auth-form button,
-.auth-switch {
+.auth-form button {
   min-height: 42px;
   border-radius: 14px;
   font-size: 15px;
@@ -741,8 +740,7 @@ button {
   outline: 0;
 }
 
-.auth-form button,
-.auth-switch {
+.auth-form button {
   padding: 0 14px;
   color: #fff;
   background: var(--ink);
@@ -759,11 +757,16 @@ button {
   font-size: 13px;
 }
 
-.auth-switch {
-  width: 100%;
-  margin-top: 10px;
+.auth-message {
+  min-height: 20px;
+  margin: 12px 2px 0;
   color: #5e5b55;
-  background: var(--surface);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nickname-step[hidden] {
+  display: none;
 }
 
 @media (max-width: 430px) {

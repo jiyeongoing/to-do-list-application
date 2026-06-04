@@ -1,11 +1,11 @@
-const CACHE_NAME = "swipe-todo-v18";
+const CACHE_NAME = "swipe-todo-v19";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=18",
-  "./app.js?v=18",
-  "./manifest.webmanifest?v=18",
-  "./icons/app-icon.svg?v=18"
+  "./styles.css?v=19",
+  "./app.js?v=19",
+  "./manifest.webmanifest?v=19",
+  "./icons/app-icon.svg?v=19"
 ];
 
 self.addEventListener("install", (event) => {
