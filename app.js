@@ -146,8 +146,6 @@ const loadState = () => {
 let state = loadState();
 let draftList = null;
 let editingDraft = false;
-let signupProfileStep = false;
-
 const persist = () => {
   localStorage.setItem(currentStorageKey(), JSON.stringify(state));
 };
@@ -230,6 +228,7 @@ const renderAccount = () => {
   $("#account-status").textContent = isSignedIn
     ? `${displayName}에 저장됨`
     : "이 기기에 저장됨";
+  $("#today-title").textContent = isSignedIn ? `${displayName}의 오늘` : "오늘";
   $("#plan-title").textContent = isSignedIn ? `${displayName} 계획` : "계획";
   $("#open-login-button").hidden = isSignedIn;
   $("#open-signup-button").hidden = isSignedIn;
@@ -262,8 +261,7 @@ const loginCredentials = () => ({
 const signupCredentials = () => ({
   email: $("#signup-email").value.trim().toLowerCase(),
   password: $("#signup-password").value,
-  passwordConfirm: $("#signup-password-confirm").value,
-  nickname: $("#signup-nickname").value.trim()
+  passwordConfirm: $("#signup-password-confirm").value
 });
 
 const clearAuthForms = () => {
@@ -272,22 +270,16 @@ const clearAuthForms = () => {
   $("#signup-email").value = "";
   $("#signup-password").value = "";
   $("#signup-password-confirm").value = "";
-  $("#signup-nickname").value = "";
+  $("#profile-nickname").value = "";
   $("#login-message").textContent = "";
   $("#signup-message").textContent = "";
-  $("#signup-credential-step").hidden = false;
-  $("#signup-nickname-step").hidden = true;
-  $("#signup-submit-button").textContent = "가입";
-  signupProfileStep = false;
+  $("#profile-message").textContent = "";
 };
 
-const openSignupNicknameStep = () => {
-  signupProfileStep = true;
-  $("#signup-credential-step").hidden = true;
-  $("#signup-nickname-step").hidden = false;
-  $("#signup-submit-button").textContent = "완료";
-  showAuthMessage("signup", "별명을 입력해 주세요.");
-  $("#signup-nickname").focus();
+const openProfileView = () => {
+  $("#profile-message").textContent = "";
+  activateView("profile-view");
+  $("#profile-nickname").focus();
 };
 
 const updateSignedInNicknameLocally = (nickname) => {
@@ -372,34 +364,34 @@ const submitSignupForm = async (event) => {
     showAuthMessage("signup", "비밀번호가 같지 않아요.");
     return;
   }
-  if (!signupProfileStep) {
-    const temporaryName = credentials.email.split("@")[0];
-    if (typeof window === "undefined") {
-      applyAccount(createLocalTestMemberAccount(credentials.email, temporaryName));
-      openSignupNicknameStep();
-      return;
-    }
-    const response = await callLocalApi("/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: credentials.email,
-        password: credentials.password,
-        nickname: temporaryName
-      })
-    });
-    if (response?.mode !== "account") {
-      showAuthMessage("signup", response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
-      return;
-    }
-    applyAccount(response);
-    openSignupNicknameStep();
+  const temporaryName = credentials.email.split("@")[0];
+  if (typeof window === "undefined") {
+    applyAccount(createLocalTestMemberAccount(credentials.email, temporaryName));
+    openProfileView();
     return;
   }
+  const response = await callLocalApi("/auth/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: credentials.email,
+      password: credentials.password,
+      nickname: temporaryName
+    })
+  });
+  if (response?.mode !== "account") {
+    showAuthMessage("signup", response?.status === 409 ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
+    return;
+  }
+  applyAccount(response);
+  openProfileView();
+};
 
-  const nickname = credentials.nickname.trim();
+const submitProfileForm = async (event) => {
+  event.preventDefault();
+  const nickname = $("#profile-nickname").value.trim();
   if (!nickname) {
-    showAuthMessage("signup", "별명을 입력해 주세요.");
+    showAuthMessage("profile", "별명을 입력해 주세요.");
     return;
   }
   if (typeof window === "undefined") {
@@ -409,7 +401,7 @@ const submitSignupForm = async (event) => {
   }
   const updatedAccount = await updateSignedInNickname(nickname);
   if (!updatedAccount) {
-    showAuthMessage("signup", "별명을 저장할 수 없어요.");
+    showAuthMessage("profile", "별명을 저장할 수 없어요.");
     return;
   }
   finishSignup(updatedAccount.displayName || nickname);
@@ -1173,6 +1165,7 @@ $("#import-input").addEventListener("change", (event) => {
 
 $("#login-form").addEventListener("submit", submitLoginForm);
 $("#signup-form").addEventListener("submit", submitSignupForm);
+$("#profile-form").addEventListener("submit", submitProfileForm);
 $("#email-check-button").addEventListener("click", checkMemberEmail);
 $("#import-local-button").addEventListener("click", importLocalDataToAccount);
 $("#logout-button").addEventListener("click", signOut);
@@ -1192,6 +1185,6 @@ if (
   location.protocol.startsWith("http")
 ) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js?v=20").catch(() => {});
+    navigator.serviceWorker.register("./service-worker.js?v=21").catch(() => {});
   });
 }

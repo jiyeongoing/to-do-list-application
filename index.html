@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="Swipe Todo">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Swipe Todo</title>
-    <link rel="manifest" href="manifest.webmanifest?v=20">
-    <link rel="icon" href="icons/app-icon.svg?v=20" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=20">
-    <link rel="stylesheet" href="styles.css?v=20">
-    <script src="app.js?v=20" defer></script>
+    <link rel="manifest" href="manifest.webmanifest?v=21">
+    <link rel="icon" href="icons/app-icon.svg?v=21" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/app-icon.svg?v=21">
+    <link rel="stylesheet" href="styles.css?v=21">
+    <script src="app.js?v=21" defer></script>
   </head>
   <body>
     <main class="prototype">
@@ -21,7 +21,7 @@
         <div id="today-view" class="view active">
           <header class="screen-header">
             <div>
-              <h2>오늘</h2>
+              <h2 id="today-title">오늘</h2>
               <p id="today-count" class="subline"></p>
             </div>
             <time id="today-date" class="date-label"></time>
@@ -178,14 +178,27 @@
               <label class="sr-only" for="signup-password-confirm">비밀번호 확인</label>
               <input id="signup-password-confirm" type="password" placeholder="비밀번호 확인" autocomplete="new-password" required>
             </div>
-            <div id="signup-nickname-step" class="nickname-step" hidden>
-              <p class="auth-thanks">가입해주셔서 감사합니다.<br>별명을 설정해주세요.</p>
-              <label class="sr-only" for="signup-nickname">별명</label>
-              <input id="signup-nickname" placeholder="별명" autocomplete="nickname">
-            </div>
             <button id="signup-submit-button" type="submit">가입</button>
           </form>
           <p id="signup-message" class="auth-message" aria-live="polite"></p>
+        </div>
+
+        <div id="profile-view" class="view auth-view">
+          <header class="screen-header back-header">
+            <div>
+              <h2>별명 설정</h2>
+              <p class="subline">가입 완료</p>
+            </div>
+            <button class="back" type="button" data-view="today-view">닫기</button>
+          </header>
+
+          <form id="profile-form" class="auth-form">
+            <p class="auth-thanks">가입해주셔서 감사합니다.<br>별명을 설정해주세요.</p>
+            <label class="sr-only" for="profile-nickname">별명</label>
+            <input id="profile-nickname" placeholder="별명" autocomplete="nickname" required>
+            <button id="profile-submit-button" type="submit">완료</button>
+          </form>
+          <p id="profile-message" class="auth-message" aria-live="polite"></p>
         </div>
       </section>
 
