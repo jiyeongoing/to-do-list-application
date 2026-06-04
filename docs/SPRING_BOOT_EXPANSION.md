@@ -10,8 +10,8 @@
 | 단계 | 목표 | 저장 방식 |
 | --- | --- | --- |
 | Phase 1 | 정적 PWA + 로컬 저장 검증 | LocalStorage |
-| Phase 2 | 로컬 Spring Boot API 추가 | In-memory prototype |
-| Phase 3 | REST API와 DB 도입 | H2/PostgreSQL |
+| Phase 2 | 로컬 Spring Boot API 추가 | H2/JPA snapshot |
+| Phase 3 | REST API와 도메인 DB 분리 | PostgreSQL 후보 |
 | Phase 4 | Google OAuth 실제 연결 | Spring Security OAuth2 + DB |
 | Phase 5 | Apple 로그인 검토 | OAuth2/OIDC |
 
@@ -108,6 +108,7 @@ src/main/java/com/swipetodo
 - 게스트 사용자는 기존 로컬 저장을 계속 사용합니다.
 - 현재 정적 PWA는 Google 로그인 흐름을 프로토타입으로 검증합니다.
 - 로컬 Spring Boot 서버는 `localhost:8080`에서 계정 저장 API를 제공합니다.
+- 계정 저장 데이터는 H2 파일 DB에 `SyncSnapshot` 형태로 저장합니다.
 - Spring Boot 실제 OAuth 확장 후 Google 로그인 사용자는 서버 저장을 사용합니다.
 - 로그인 직후 로컬 데이터가 있으면 `이 기기 데이터 가져오기`를 노출합니다.
 - 가져오기 시 서버 데이터와 병합하고, 기존 로컬 데이터는 사용자가 확인하기 전까지 삭제하지 않습니다.
@@ -123,6 +124,7 @@ src/main/java/com/swipetodo
 | E2E 후보 | 오늘 리스트 완료 수 갱신, 과거 날짜 읽기전용 |
 | Auth Test | OAuth 로그인 사용자 식별, 계정별 데이터 분리 |
 | API Test | `/api/me`, Google 프로토타입 로그인, 로컬 데이터 가져오기 |
+| Persistence Test | 계정별 스냅샷 저장과 export 검증 |
 
 우선순위 높은 테스트:
 

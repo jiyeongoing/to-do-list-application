@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-record TodoState(
+public record TodoState(
 	List<Map<String, Object>> today,
 	List<Map<String, Object>> daily,
 	List<Map<String, Object>> planned,
 	List<Map<String, Object>> lists
 ) {
 
-	TodoState {
+	public TodoState {
 		today = copyOrEmpty(today);
 		daily = copyOrEmpty(daily);
 		planned = copyOrEmpty(planned);
