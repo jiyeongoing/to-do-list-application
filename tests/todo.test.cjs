@@ -295,6 +295,8 @@ test("클라우드 계정 화면과 Supabase 연결을 제공한다", () => {
   assert.match(appCode, /signInWithPassword/);
   assert.match(appCode, /from\("todo_states"\)/);
   assert.match(appCode, /rpc\("is_email_available"/);
+  assert.match(appCode, /withBusyButton/);
+  assert.match(appCode, /Email not confirmed/);
   assert.match(htmlCode, /id="email-check-button"/);
 });
 

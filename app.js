@@ -150,6 +150,28 @@ const showAuthMessage = (target, message) => {
   if (node) node.textContent = message;
 };
 
+const withBusyButton = async (button, busyText, action) => {
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = busyText;
+  try {
+    return await action();
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+};
+
+const loginErrorMessage = (error) => {
+  if (error?.message?.includes("Email not confirmed")) {
+    return "이전 미인증 계정이에요. 새 이메일로 가입해 주세요.";
+  }
+  if (error?.message?.includes("Invalid login credentials")) {
+    return "이메일 또는 비밀번호가 맞지 않아요.";
+  }
+  return error?.message || "로그인할 수 없어요.";
+};
+
 const renderAccount = () => {
   const status = $("#account-status");
   if (!status) return;
@@ -217,9 +239,13 @@ const submitLogin = async (event) => {
   }
   const email = $("#login-email").value.trim();
   const password = $("#login-password").value;
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  showAuthMessage("login", "로그인 중...");
+  const { data, error } = await withBusyButton(button, "확인 중", () =>
+    supabaseClient.auth.signInWithPassword({ email, password })
+  );
   if (error) {
-    showAuthMessage("login", "이메일 또는 비밀번호를 확인해 주세요.");
+    showAuthMessage("login", loginErrorMessage(error));
     return;
   }
   showAuthMessage("login", "");
@@ -250,13 +276,17 @@ const submitSignup = async (event) => {
   }
   const importLocal = hasTodoData(state) && window.confirm("이 기기의 데이터를 계정에 가져올까요?");
   localStorage.setItem(SIGNUP_IMPORT_KEY, importLocal ? "yes" : "no");
-  const { data, error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: window.SWIPE_TODO_SUPABASE.redirectUrl
-    }
-  });
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  showAuthMessage("signup", "가입 중...");
+  const { data, error } = await withBusyButton(button, "가입 중", () =>
+    supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.SWIPE_TODO_SUPABASE.redirectUrl
+      }
+    })
+  );
   if (error) {
     showAuthMessage("signup", error.message.includes("already") ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
     return;
@@ -286,9 +316,13 @@ const checkSignupEmail = async () => {
     showAuthMessage("signup", "클라우드 설정이 필요해요.");
     return;
   }
-  const { data, error } = await supabaseClient.rpc("is_email_available", {
-    candidate_email: email
-  });
+  const button = $("#email-check-button");
+  showAuthMessage("signup", "확인 중...");
+  const { data, error } = await withBusyButton(button, "확인 중", () =>
+    supabaseClient.rpc("is_email_available", {
+      candidate_email: email
+    })
+  );
   if (error) {
     showAuthMessage("signup", "중복확인을 할 수 없어요.");
     return;
