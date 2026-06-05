@@ -712,6 +712,12 @@ button {
   margin-top: 22px;
 }
 
+.email-row {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 8px;
+}
+
 .auth-form input {
   min-height: 44px;
   border: 1px solid var(--line);
@@ -719,6 +725,15 @@ button {
   padding: 0 14px;
   outline: 0;
   font-size: 16px;
+}
+
+.email-row button {
+  min-height: 44px;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .auth-message {

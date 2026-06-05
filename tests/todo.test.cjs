@@ -213,6 +213,8 @@ const createDocument = () => {
     ["export-button"],
     ["import-input"],
     ["clear-button"],
+    ["email-check-button"],
+    ["signup-email"],
     ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
   document.register("phone", "phone");
@@ -292,6 +294,8 @@ test("클라우드 계정 화면과 Supabase 연결을 제공한다", () => {
   assert.match(htmlCode, /supabase-config\.js/);
   assert.match(appCode, /signInWithPassword/);
   assert.match(appCode, /from\("todo_states"\)/);
+  assert.match(appCode, /rpc\("is_email_available"/);
+  assert.match(htmlCode, /id="email-check-button"/);
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
@@ -313,6 +317,8 @@ test("Supabase 테이블은 사용자별 RLS 정책으로 보호한다", () => {
   assert.match(supabaseSchemaCode, /auth\.uid\(\)/);
   assert.match(supabaseSchemaCode, /Users can read own todo state/);
   assert.match(supabaseSchemaCode, /Users can update own todo state/);
+  assert.match(supabaseSchemaCode, /function public\.is_email_available/);
+  assert.match(supabaseSchemaCode, /grant execute.*anon, authenticated/);
 });
 
 test("가입 인증 링크는 배포 페이지로 돌아오고 잘못된 경로도 복구한다", () => {

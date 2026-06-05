@@ -159,7 +159,10 @@
             <button class="back" type="button" data-view="today-view">닫기</button>
           </header>
           <form id="signup-form" class="auth-form">
-            <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
+            <div class="email-row">
+              <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
+              <button id="email-check-button" type="button">중복확인</button>
+            </div>
             <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" minlength="8" required>
             <input id="signup-password-confirm" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="8" required>
             <button type="submit">가입</button>

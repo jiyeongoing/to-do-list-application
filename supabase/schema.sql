@@ -30,3 +30,19 @@ on public.todo_states
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+create or replace function public.is_email_available(candidate_email text)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select not exists (
+    select 1
+    from auth.users
+    where lower(email) = lower(trim(candidate_email))
+  );
+$$;
+
+revoke all on function public.is_email_available(text) from public;
+grant execute on function public.is_email_available(text) to anon, authenticated;

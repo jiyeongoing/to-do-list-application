@@ -9,8 +9,8 @@
 
 `Authentication > Providers > Email`에서 이메일 로그인을 활성화합니다.
 
-빠른 데모가 필요하면 `Confirm email`을 끌 수 있습니다. 실제 운영에서는 이메일 확인을
-켜는 편이 안전합니다.
+현재 데모는 가입 즉시 사용할 수 있도록 `Confirm email`을 끕니다. 이메일 소유 확인이
+필요한 운영 단계에서는 다시 켜고 SMTP 설정을 추가합니다.
 
 `Authentication > URL Configuration`에 아래 주소를 추가합니다.
 

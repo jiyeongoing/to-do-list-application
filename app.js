@@ -5,6 +5,7 @@ const $ = (selector) => document.querySelector(selector);
 let supabaseClient = null;
 let signedInUser = null;
 let cloudSyncTimer = null;
+let checkedSignupEmail = "";
 
 const toDateKey = (date) => {
   const year = date.getFullYear();
@@ -235,6 +236,10 @@ const submitSignup = async (event) => {
   const email = $("#signup-email").value.trim();
   const password = $("#signup-password").value;
   const passwordConfirm = $("#signup-password-confirm").value;
+  if (checkedSignupEmail !== email.toLowerCase()) {
+    showAuthMessage("signup", "이메일 중복확인을 해주세요.");
+    return;
+  }
   if (password.length < 8) {
     showAuthMessage("signup", "비밀번호는 8자 이상이에요.");
     return;
@@ -267,7 +272,33 @@ const submitSignup = async (event) => {
     activateView("today-view");
     return;
   }
-  showAuthMessage("signup", "확인 메일을 보냈어요. 확인 후 로그인해 주세요.");
+  showAuthMessage("signup", "가입됐어요. 로그인해 주세요.");
+};
+
+const checkSignupEmail = async () => {
+  const email = $("#signup-email").value.trim().toLowerCase();
+  checkedSignupEmail = "";
+  if (!email) {
+    showAuthMessage("signup", "이메일을 입력해 주세요.");
+    return;
+  }
+  if (!supabaseClient) {
+    showAuthMessage("signup", "클라우드 설정이 필요해요.");
+    return;
+  }
+  const { data, error } = await supabaseClient.rpc("is_email_available", {
+    candidate_email: email
+  });
+  if (error) {
+    showAuthMessage("signup", "중복확인을 할 수 없어요.");
+    return;
+  }
+  if (!data) {
+    showAuthMessage("signup", "이미 가입된 이메일이에요.");
+    return;
+  }
+  checkedSignupEmail = email;
+  showAuthMessage("signup", "사용 가능한 이메일이에요.");
 };
 
 const signOut = async () => {
@@ -1003,6 +1034,10 @@ $("#import-input").addEventListener("change", (event) => {
 
 $("#login-form")?.addEventListener("submit", submitLogin);
 $("#signup-form")?.addEventListener("submit", submitSignup);
+$("#email-check-button")?.addEventListener("click", checkSignupEmail);
+$("#signup-email")?.addEventListener("input", () => {
+  checkedSignupEmail = "";
+});
 $("#logout-button")?.addEventListener("click", signOut);
 
 processDueItems();
