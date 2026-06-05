@@ -304,6 +304,7 @@ test("클라우드 계정 화면과 Supabase 연결을 제공한다", () => {
   assert.match(appCode, /rpc\("is_email_available"/);
   assert.match(appCode, /withBusyButton/);
   assert.match(appCode, /Email not confirmed/);
+  assert.match(appCode, /\$\{displayName\}의 하루/);
   assert.match(appCode, /pendingSignupState/);
   assert.match(htmlCode, /id="profile-view"/);
   assert.match(htmlCode, /id="email-check-button"/);

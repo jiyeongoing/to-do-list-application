@@ -178,7 +178,7 @@ const renderAccount = () => {
   if (!status) return;
   const signedIn = Boolean(signedInUser);
   status.textContent = signedIn ? `${displayName || signedInUser.email}에 저장됨` : "이 기기에 저장됨";
-  $("#today-title").textContent = signedIn && displayName ? `${displayName}의 오늘` : "오늘";
+  $("#today-title").textContent = signedIn && displayName ? `${displayName}의 하루` : "오늘";
   $("#daily-title").textContent = signedIn && displayName ? `${displayName}의 데일리루틴` : "데일리루틴";
   $("#plan-title").textContent = signedIn && displayName ? `${displayName}의 계획` : "계획";
   $("#open-login-button").hidden = signedIn;
