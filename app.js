@@ -1,6 +1,10 @@
 const STORAGE_KEY = "swipe-todo-prototype-v1";
+const SIGNUP_IMPORT_KEY = "swipe-todo-signup-import";
 
 const $ = (selector) => document.querySelector(selector);
+let supabaseClient = null;
+let signedInUser = null;
+let cloudSyncTimer = null;
 
 const toDateKey = (date) => {
   const year = date.getFullYear();
@@ -126,10 +130,165 @@ let draftList = null;
 let editingDraft = false;
 const persist = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  scheduleCloudSync();
 };
 
 const showStatus = (message) => {
   $("#status-message").textContent = message;
+};
+
+const hasTodoData = (candidate) => Boolean(
+  candidate.today.length ||
+  candidate.daily.length ||
+  candidate.planned.length ||
+  candidate.lists.length
+);
+
+const showAuthMessage = (target, message) => {
+  const node = $(`#${target}-message`);
+  if (node) node.textContent = message;
+};
+
+const renderAccount = () => {
+  const status = $("#account-status");
+  if (!status) return;
+  const signedIn = Boolean(signedInUser);
+  status.textContent = signedIn ? `${signedInUser.email}에 저장됨` : "이 기기에 저장됨";
+  $("#open-login-button").hidden = signedIn;
+  $("#open-signup-button").hidden = signedIn;
+  $("#logout-button").hidden = !signedIn;
+};
+
+const uploadCloudState = async () => {
+  if (!supabaseClient || !signedInUser) return;
+  const { error } = await supabaseClient
+    .from("todo_states")
+    .upsert({
+      user_id: signedInUser.id,
+      payload: state,
+      updated_at: new Date().toISOString()
+    });
+  if (error) {
+    showStatus("기기에는 저장됐지만 클라우드 동기화에 실패했어요.");
+    return;
+  }
+  showStatus("클라우드에 저장됐어요.");
+};
+
+function scheduleCloudSync() {
+  if (!supabaseClient || !signedInUser || typeof window === "undefined") return;
+  window.clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = window.setTimeout(uploadCloudState, 500);
+}
+
+const loadCloudState = async () => {
+  if (!supabaseClient || !signedInUser) return;
+  const { data, error } = await supabaseClient
+    .from("todo_states")
+    .select("payload")
+    .eq("user_id", signedInUser.id)
+    .maybeSingle();
+  if (error) {
+    showStatus("클라우드 데이터를 불러오지 못했어요.");
+    return;
+  }
+  if (data?.payload) {
+    state = normalizeState(data.payload);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    refreshActiveView();
+    showStatus("클라우드 데이터를 불러왔어요.");
+    return;
+  }
+  await uploadCloudState();
+};
+
+const applySession = async (session) => {
+  signedInUser = session?.user || null;
+  renderAccount();
+  if (signedInUser) await loadCloudState();
+};
+
+const submitLogin = async (event) => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    showAuthMessage("login", "클라우드 설정이 필요해요.");
+    return;
+  }
+  const email = $("#login-email").value.trim();
+  const password = $("#login-password").value;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    showAuthMessage("login", "이메일 또는 비밀번호를 확인해 주세요.");
+    return;
+  }
+  showAuthMessage("login", "");
+  await applySession(data.session);
+  activateView("today-view");
+};
+
+const submitSignup = async (event) => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    showAuthMessage("signup", "클라우드 설정이 필요해요.");
+    return;
+  }
+  const email = $("#signup-email").value.trim();
+  const password = $("#signup-password").value;
+  const passwordConfirm = $("#signup-password-confirm").value;
+  if (password.length < 8) {
+    showAuthMessage("signup", "비밀번호는 8자 이상이에요.");
+    return;
+  }
+  if (password !== passwordConfirm) {
+    showAuthMessage("signup", "비밀번호가 같지 않아요.");
+    return;
+  }
+  const importLocal = hasTodoData(state) && window.confirm("이 기기의 데이터를 계정에 가져올까요?");
+  localStorage.setItem(SIGNUP_IMPORT_KEY, importLocal ? "yes" : "no");
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) {
+    showAuthMessage("signup", error.message.includes("already") ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
+    return;
+  }
+  if (!importLocal) {
+    state = createEmptyState();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  if (data.session) {
+    signedInUser = data.session.user;
+    await uploadCloudState();
+    renderAccount();
+    activateView("today-view");
+    return;
+  }
+  showAuthMessage("signup", "확인 메일을 보냈어요. 확인 후 로그인해 주세요.");
+};
+
+const signOut = async () => {
+  if (supabaseClient) await supabaseClient.auth.signOut();
+  signedInUser = null;
+  state = createEmptyState();
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SIGNUP_IMPORT_KEY);
+  renderAccount();
+  activateView("today-view");
+  showStatus("로그아웃했어요.");
+};
+
+const initializeCloud = async () => {
+  if (typeof window === "undefined") return;
+  const config = window.SWIPE_TODO_SUPABASE;
+  if (!window.supabase?.createClient || !config?.url || !config?.anonKey) {
+    renderAccount();
+    return;
+  }
+  supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+  const { data } = await supabaseClient.auth.getSession();
+  await applySession(data.session);
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    signedInUser = session?.user || null;
+    renderAccount();
+  });
 };
 
 const formatDate = (dateKey, options = {}) => {
@@ -837,9 +996,15 @@ $("#import-input").addEventListener("change", (event) => {
   reader.readAsText(file);
 });
 
+$("#login-form")?.addEventListener("submit", submitLogin);
+$("#signup-form")?.addEventListener("submit", submitSignup);
+$("#logout-button")?.addEventListener("click", signOut);
+
 processDueItems();
 renderToday();
 renderDaily();
+renderAccount();
+initializeCloud();
 
 if (
   typeof navigator !== "undefined" &&

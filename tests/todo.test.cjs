@@ -222,6 +222,7 @@ const createDocument = () => {
 const appCode = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const htmlCode = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const serviceWorkerCode = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
+const supabaseSchemaCode = fs.readFileSync(path.join(__dirname, "..", "supabase", "schema.sql"), "utf8");
 
 const runAppTest = (body) => {
   const document = createDocument();
@@ -283,26 +284,34 @@ test("할 일은 이 기기에 저장한다", () => {
   `);
 });
 
-test("무료 배포 화면에는 계정 기능이 노출되지 않는다", () => {
-  assert.doesNotMatch(htmlCode, /account-bar/);
-  assert.doesNotMatch(htmlCode, /login-view/);
-  assert.doesNotMatch(htmlCode, /signup-view/);
-  assert.doesNotMatch(appCode, /API_BASE_URL/);
-  assert.doesNotMatch(appCode, /fetch\(/);
+test("클라우드 계정 화면과 Supabase 연결을 제공한다", () => {
+  assert.match(htmlCode, /account-bar/);
+  assert.match(htmlCode, /login-view/);
+  assert.match(htmlCode, /signup-view/);
+  assert.match(htmlCode, /supabase-config\.js/);
+  assert.match(appCode, /signInWithPassword/);
+  assert.match(appCode, /from\("todo_states"\)/);
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
   assert.match(htmlCode, /<script src="app\.js" defer><\/script>/);
-  assert.doesNotMatch(htmlCode, /config\.js/);
+  assert.match(htmlCode, /<script src="supabase-config\.js"><\/script>/);
   assert.match(htmlCode, /href="styles\.css"/);
   assert.match(appCode, /service-worker\.js"\)/);
   assert.match(serviceWorkerCode, /swipe-todo-static/);
-  assert.doesNotMatch(serviceWorkerCode, /config\.js/);
+  assert.match(serviceWorkerCode, /"\.\/supabase-config\.js"/);
   assert.match(serviceWorkerCode, /"\.\/app\.js"/);
   assert.match(serviceWorkerCode, /"\.\/styles\.css"/);
   assert.doesNotMatch(htmlCode, /\?v=/);
   assert.doesNotMatch(appCode, /service-worker\.js\?v=/);
   assert.doesNotMatch(serviceWorkerCode, /\?v=/);
+});
+
+test("Supabase 테이블은 사용자별 RLS 정책으로 보호한다", () => {
+  assert.match(supabaseSchemaCode, /enable row level security/);
+  assert.match(supabaseSchemaCode, /auth\.uid\(\)/);
+  assert.match(supabaseSchemaCode, /Users can read own todo state/);
+  assert.match(supabaseSchemaCode, /Users can update own todo state/);
 });
 
 test("샘플 불러오기와 데이터 비우기를 지원한다", () => {

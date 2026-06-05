@@ -1,7 +1,8 @@
-const CACHE_NAME = "swipe-todo-static-v2";
+const CACHE_NAME = "swipe-todo-static-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./supabase-config.js",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
