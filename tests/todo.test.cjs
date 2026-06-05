@@ -172,9 +172,6 @@ const createDocument = () => {
     ["daily-view", "view"],
     ["plan-view", "view"],
     ["list-view", "view"],
-    ["login-view", "view"],
-    ["signup-view", "view"],
-    ["profile-view", "view"],
     ["today-date"],
     ["today-title"],
     ["today-count"],
@@ -216,38 +213,14 @@ const createDocument = () => {
     ["export-button"],
     ["import-input"],
     ["clear-button"],
-    ["account-status"],
-    ["open-login-button"],
-    ["open-signup-button"],
-    ["login-form"],
-    ["login-email"],
-    ["login-password"],
-    ["signup-form"],
-    ["signup-credential-step"],
-    ["signup-email"],
-    ["email-check-button"],
-    ["signup-password"],
-    ["signup-password-confirm"],
-    ["signup-submit-button"],
-    ["profile-form"],
-    ["profile-nickname"],
-    ["profile-submit-button"],
-    ["login-message"],
-    ["signup-message"],
-    ["profile-message"],
-    ["import-local-button"],
-    ["logout-button"],
     ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
-  document.querySelector("#open-login-button").setAttribute("data-view", "login-view");
-  document.querySelector("#open-signup-button").setAttribute("data-view", "signup-view");
   document.register("phone", "phone");
   return document;
 };
 
 const appCode = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const htmlCode = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-const cssCode = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 const serviceWorkerCode = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
 
 const runAppTest = (body) => {
@@ -255,10 +228,10 @@ const runAppTest = (body) => {
   const context = {
     assert,
     document,
-    fetchCalls: [],
     Intl,
     console,
     Date,
+    location: { hostname: "localhost", protocol: "http:" },
     crypto: { randomUUID: () => `id-${Math.random().toString(16).slice(2)}` },
     localStorage: {
       store: {},
@@ -273,14 +246,6 @@ const runAppTest = (body) => {
       }
     }
   };
-  context.fetch = (url, options = {}) => {
-    context.fetchCalls.push({ url, options });
-    return Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({})
-    });
-  };
-
   vm.runInNewContext(`${appCode}\n${body}`, context, { filename: "todo.test.vm.js" });
 };
 
@@ -308,153 +273,36 @@ test("첫 실행은 샘플 없이 빈 목록으로 시작한다", () => {
   `);
 });
 
-test("게스트 사용자는 기존처럼 이 기기에 저장한다", () => {
+test("할 일은 이 기기에 저장한다", () => {
   runAppTest(`
-    document.querySelector("#today-input").value = "게스트 할 일";
+    document.querySelector("#today-input").value = "오늘 할 일";
     document.querySelector("#today-form").requestSubmit();
 
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    assert.equal(account.mode, "guest");
-    assert.equal(saved.today[0].title, "게스트 할 일");
-    assert.equal(document.querySelector("#account-status").textContent, "이 기기에 저장됨");
+    assert.equal(saved.today[0].title, "오늘 할 일");
   `);
 });
 
-test("계정 버튼은 하단 고정 영역에 노출된다", () => {
-  assert.match(htmlCode, /<section class="account-bar" aria-label="계정 저장">/);
-  assert.match(htmlCode, /id="open-login-button"/);
-  assert.match(htmlCode, /id="open-signup-button"/);
-  assert.match(htmlCode, /id="login-view"/);
-  assert.match(htmlCode, /id="signup-view"/);
-  assert.doesNotMatch(htmlCode, /id="google-auth-button"/);
-  assert.match(htmlCode, /id="email-check-button"/);
-  assert.match(htmlCode, /id="signup-password"/);
-  assert.match(htmlCode, /id="signup-password-confirm"/);
-  assert.match(htmlCode, /placeholder="별명"/);
-  assert.match(cssCode, /\.account-bar\s*{[^}]*position:\s*fixed;[^}]*bottom:\s*0;/s);
+test("무료 배포 화면에는 계정 기능이 노출되지 않는다", () => {
+  assert.doesNotMatch(htmlCode, /account-bar/);
+  assert.doesNotMatch(htmlCode, /login-view/);
+  assert.doesNotMatch(htmlCode, /signup-view/);
+  assert.doesNotMatch(appCode, /API_BASE_URL/);
+  assert.doesNotMatch(appCode, /fetch\(/);
 });
 
 test("정적 파일과 서비스 워커 캐시 버전이 일치한다", () => {
   assert.match(htmlCode, /<script src="app\.js" defer><\/script>/);
+  assert.doesNotMatch(htmlCode, /config\.js/);
   assert.match(htmlCode, /href="styles\.css"/);
   assert.match(appCode, /service-worker\.js"\)/);
   assert.match(serviceWorkerCode, /swipe-todo-static/);
+  assert.doesNotMatch(serviceWorkerCode, /config\.js/);
   assert.match(serviceWorkerCode, /"\.\/app\.js"/);
   assert.match(serviceWorkerCode, /"\.\/styles\.css"/);
   assert.doesNotMatch(htmlCode, /\?v=/);
   assert.doesNotMatch(appCode, /service-worker\.js\?v=/);
   assert.doesNotMatch(serviceWorkerCode, /\?v=/);
-});
-
-test("로그인과 회원가입은 분리된 화면으로 열린다", () => {
-  runAppTest(`
-    document.dispatchEvent({ type: "click", target: document.querySelector("#open-login-button") });
-    assert.equal(document.querySelector("#login-view").classList.contains("active"), true);
-    assert.equal(document.querySelector("#signup-view").classList.contains("active"), false);
-
-    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
-    assert.equal(document.querySelector("#login-view").classList.contains("active"), false);
-    assert.equal(document.querySelector("#signup-view").classList.contains("active"), true);
-  `);
-});
-
-test("회원가입 후 별도 별명 설정 화면으로 이동한다", () => {
-  runAppTest(`
-    document.querySelector("#email-check-button").dispatchEvent({ type: "click" });
-    assert.equal(document.querySelector("#signup-message").textContent, "이메일을 입력해 주세요.");
-
-    document.querySelector("#signup-email").value = "member@example.com";
-    document.querySelector("#signup-password").value = "safe-password";
-    document.querySelector("#signup-password-confirm").value = "safe-password";
-    document.querySelector("#signup-form").requestSubmit();
-
-    assert.equal(document.querySelector("#signup-view").classList.contains("active"), false);
-    assert.equal(document.querySelector("#profile-view").classList.contains("active"), true);
-  `);
-  assert.match(htmlCode, /가입해주셔서 감사합니다/);
-});
-
-test("회원가입 후 계정 저장으로 전환한다", () => {
-  runAppTest(`
-    state.today = [{ id: "local-a", date: todayKey(), title: "로컬 할 일", completed: false }];
-    persist();
-
-    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
-    document.querySelector("#signup-email").value = "member@example.com";
-    document.querySelector("#signup-password").value = "safe-password";
-    document.querySelector("#signup-password-confirm").value = "safe-password";
-    document.querySelector("#signup-form").requestSubmit();
-    document.querySelector("#profile-nickname").value = "회원";
-    document.querySelector("#profile-form").requestSubmit();
-
-    assert.equal(account.mode, "account");
-    assert.equal(account.provider, "local");
-    assert.equal(account.email, "member@example.com");
-    assert.deepEqual(state.today, []);
-    assert.equal(document.querySelector("#today-view").classList.contains("active"), true);
-    assert.equal(JSON.parse(localStorage.getItem(STORAGE_KEY)).today[0].title, "로컬 할 일");
-    assert.equal(document.querySelector("#account-status").textContent, "회원에 저장됨");
-    assert.equal(document.querySelector("#today-title").innerHTML, '<span class="nickname-highlight">회원</span>의 오늘');
-    assert.equal(document.querySelector("#daily-title").innerHTML, '<span class="nickname-highlight">회원</span>의 데일리루틴');
-    assert.equal(document.querySelector("#plan-title").innerHTML, '<span class="nickname-highlight">회원</span>의 계획');
-    assert.equal(document.querySelector("#import-local-button").hidden, false);
-  `);
-});
-
-test("로그아웃하면 계정 데이터와 게스트 데이터가 비워진다", () => {
-  runAppTest(`
-    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
-    document.querySelector("#signup-email").value = "member@example.com";
-    document.querySelector("#signup-password").value = "safe-password";
-    document.querySelector("#signup-password-confirm").value = "safe-password";
-    document.querySelector("#signup-form").requestSubmit();
-    document.querySelector("#profile-nickname").value = "회원";
-    document.querySelector("#profile-form").requestSubmit();
-    document.querySelector("#today-input").value = "계정 할 일";
-    document.querySelector("#today-form").requestSubmit();
-
-    const signedInKey = accountStorageKey();
-    assert.equal(JSON.parse(localStorage.getItem(signedInKey)).today[0].title, "계정 할 일");
-
-    document.querySelector("#logout-button").dispatchEvent({ type: "click" });
-
-    assert.equal(account.mode, "guest");
-    assert.equal(localStorage.getItem(signedInKey), null);
-    assert.ok(fetchCalls.some((call) => call.url.endsWith("/logout") && call.options.method === "POST"));
-    assert.deepEqual(state.today, []);
-    assert.equal(document.querySelector("#today-title").textContent, "오늘");
-    assert.equal(document.querySelector("#daily-title").textContent, "데일리루틴");
-    assert.equal(document.querySelector("#plan-title").textContent, "계획");
-  `);
-});
-
-test("로그인 후 로컬 데이터를 가져오면 계정 저장소에 병합한다", () => {
-  runAppTest(`
-    state.today = [{ id: "local-a", date: todayKey(), title: "로컬 할 일", completed: false }];
-    state.daily = [{ id: "daily-a", title: "물 마시기", active: true }];
-    persist();
-
-    document.dispatchEvent({ type: "click", target: document.querySelector("#open-signup-button") });
-    document.querySelector("#signup-email").value = "member@example.com";
-    document.querySelector("#signup-password").value = "safe-password";
-    document.querySelector("#signup-password-confirm").value = "safe-password";
-    document.querySelector("#signup-form").requestSubmit();
-    document.querySelector("#profile-nickname").value = "회원";
-    document.querySelector("#profile-form").requestSubmit();
-    document.querySelector("#import-local-button").dispatchEvent({ type: "click" });
-    document.querySelector("#today-input").value = "계정 할 일";
-    document.querySelector("#today-form").requestSubmit();
-
-    const accountSaved = JSON.parse(localStorage.getItem(accountStorageKey()));
-    const localSaved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    const importCall = fetchCalls.find((call) => call.url.endsWith("/sync/import-local"));
-    assert.deepEqual(accountSaved.today.map((item) => item.title), ["계정 할 일", "로컬 할 일"]);
-    assert.equal(accountSaved.daily[0].title, "물 마시기");
-    assert.deepEqual(localSaved.today.map((item) => item.title), ["로컬 할 일"]);
-    assert.equal(importCall.options.headers["X-Prototype-Account-Id"], "member@example.com");
-    assert.match(importCall.options.body, /로컬 할 일/);
-    assert.equal(document.querySelector("#status-message").textContent, "이 기기 데이터를 계정에 가져왔어요.");
-  `);
 });
 
 test("샘플 불러오기와 데이터 비우기를 지원한다", () => {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "swipe-todo-static";
+const CACHE_NAME = "swipe-todo-static-v2";
 const APP_SHELL = [
   "./",
   "./index.html",

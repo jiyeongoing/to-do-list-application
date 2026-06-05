@@ -138,68 +138,6 @@
           <div id="list-items" class="items"></div>
         </div>
 
-        <div id="login-view" class="view auth-view">
-          <header class="screen-header back-header">
-            <div>
-              <h2>로그인</h2>
-              <p class="subline">계정에 저장</p>
-            </div>
-            <button class="back" type="button" data-view="today-view">닫기</button>
-          </header>
-
-          <form id="login-form" class="auth-form">
-            <label class="sr-only" for="login-email">이메일</label>
-            <input id="login-email" type="email" placeholder="이메일" autocomplete="email" required>
-            <label class="sr-only" for="login-password">비밀번호</label>
-            <input id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password" required>
-            <button type="submit">로그인</button>
-          </form>
-          <p id="login-message" class="auth-message" aria-live="polite"></p>
-        </div>
-
-        <div id="signup-view" class="view auth-view">
-          <header class="screen-header back-header">
-            <div>
-              <h2>회원가입</h2>
-              <p class="subline">새 계정 만들기</p>
-            </div>
-            <button class="back" type="button" data-view="today-view">닫기</button>
-          </header>
-
-          <form id="signup-form" class="auth-form">
-            <div id="signup-credential-step" class="credential-step">
-              <label class="sr-only" for="signup-email">이메일</label>
-              <div class="email-row">
-                <input id="signup-email" type="email" placeholder="이메일" autocomplete="email" required>
-                <button id="email-check-button" type="button">중복확인</button>
-              </div>
-              <label class="sr-only" for="signup-password">비밀번호</label>
-              <input id="signup-password" type="password" placeholder="비밀번호" autocomplete="new-password" required>
-              <label class="sr-only" for="signup-password-confirm">비밀번호 확인</label>
-              <input id="signup-password-confirm" type="password" placeholder="비밀번호 확인" autocomplete="new-password" required>
-            </div>
-            <button id="signup-submit-button" type="submit">가입</button>
-          </form>
-          <p id="signup-message" class="auth-message" aria-live="polite"></p>
-        </div>
-
-        <div id="profile-view" class="view auth-view">
-          <header class="screen-header back-header">
-            <div>
-              <h2>별명 설정</h2>
-              <p class="subline">가입 완료</p>
-            </div>
-            <button class="back" type="button" data-view="today-view">닫기</button>
-          </header>
-
-          <form id="profile-form" class="auth-form">
-            <p class="auth-thanks">가입해주셔서 감사합니다.<br>별명을 설정해주세요.</p>
-            <label class="sr-only" for="profile-nickname">별명</label>
-            <input id="profile-nickname" placeholder="별명" autocomplete="nickname" required>
-            <button id="profile-submit-button" type="submit">완료</button>
-          </form>
-          <p id="profile-message" class="auth-message" aria-live="polite"></p>
-        </div>
       </section>
 
       <section class="utility-panel" aria-label="데이터 관리">
@@ -213,15 +151,6 @@
           <button id="clear-button" type="button">비우기</button>
         </div>
         <p id="status-message" class="storage-note">이 기기에 저장됩니다.</p>
-      </section>
-      <section class="account-bar" aria-label="계정 저장">
-        <p id="account-status" class="storage-note">이 기기에 저장됨</p>
-        <div class="account-actions">
-          <button id="open-login-button" type="button" data-view="login-view">로그인</button>
-          <button id="open-signup-button" type="button" data-view="signup-view">회원가입</button>
-          <button id="import-local-button" type="button" hidden>기기 데이터 가져오기</button>
-          <button id="logout-button" type="button" hidden>로그아웃</button>
-        </div>
       </section>
     </main>
   </body>
