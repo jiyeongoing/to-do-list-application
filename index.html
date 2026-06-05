@@ -169,6 +169,29 @@
           </form>
           <p id="signup-message" class="auth-message" aria-live="polite"></p>
         </div>
+
+        <div id="profile-view" class="view auth-view">
+          <header class="screen-header">
+            <h2>가입 완료</h2>
+          </header>
+          <form id="profile-form" class="auth-form">
+            <p class="auth-intro">가입해주셔서 감사합니다.<br>별명을 설정해주세요.</p>
+            <input id="profile-nickname" placeholder="별명" autocomplete="nickname" required>
+            <button type="submit">완료</button>
+          </form>
+          <p id="profile-message" class="auth-message" aria-live="polite"></p>
+        </div>
+
+        <div id="import-choice-view" class="view auth-view">
+          <header class="screen-header">
+            <h2>데이터 가져오기</h2>
+          </header>
+          <div class="auth-form">
+            <p class="auth-intro">이 기기에 저장된 할 일을<br>계정으로 가져올까요?</p>
+            <button id="import-signup-data-button" type="button">가져오기</button>
+            <button id="start-fresh-button" class="secondary-auth-button" type="button">새로 시작</button>
+          </div>
+        </div>
       </section>
 
       <section class="utility-panel" aria-label="데이터 관리">

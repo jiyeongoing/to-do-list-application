@@ -172,6 +172,8 @@ const createDocument = () => {
     ["daily-view", "view"],
     ["plan-view", "view"],
     ["list-view", "view"],
+    ["profile-view", "view"],
+    ["import-choice-view", "view"],
     ["today-date"],
     ["today-title"],
     ["today-count"],
@@ -215,6 +217,11 @@ const createDocument = () => {
     ["clear-button"],
     ["email-check-button"],
     ["signup-email"],
+    ["profile-form"],
+    ["profile-nickname"],
+    ["profile-message"],
+    ["import-signup-data-button"],
+    ["start-fresh-button"],
     ["status-message"]
   ].forEach(([id, className]) => document.register(id, className));
   document.register("phone", "phone");
@@ -297,6 +304,8 @@ test("클라우드 계정 화면과 Supabase 연결을 제공한다", () => {
   assert.match(appCode, /rpc\("is_email_available"/);
   assert.match(appCode, /withBusyButton/);
   assert.match(appCode, /Email not confirmed/);
+  assert.match(appCode, /pendingSignupState/);
+  assert.match(htmlCode, /id="profile-view"/);
   assert.match(htmlCode, /id="email-check-button"/);
 });
 
@@ -321,6 +330,19 @@ test("Supabase 테이블은 사용자별 RLS 정책으로 보호한다", () => {
   assert.match(supabaseSchemaCode, /Users can update own todo state/);
   assert.match(supabaseSchemaCode, /function public\.is_email_available/);
   assert.match(supabaseSchemaCode, /grant execute.*anon, authenticated/);
+  assert.match(supabaseSchemaCode, /create table if not exists public\.profiles/);
+});
+
+test("가입 성공 후 별명을 저장한 뒤에만 기존 데이터 가져오기를 묻는다", () => {
+  const signupPosition = appCode.indexOf("supabaseClient.auth.signUp");
+  const profilePosition = appCode.indexOf("const submitProfile");
+  const importChoicePosition = appCode.indexOf('activateView("import-choice-view")');
+  assert.ok(signupPosition >= 0);
+  assert.ok(profilePosition > signupPosition);
+  assert.ok(importChoicePosition > profilePosition);
+  assert.doesNotMatch(appCode, /window\.confirm/);
+  assert.match(htmlCode, /id="import-signup-data-button"/);
+  assert.match(htmlCode, /id="start-fresh-button"/);
 });
 
 test("가입 인증 링크는 배포 페이지로 돌아오고 잘못된 경로도 복구한다", () => {

@@ -1,11 +1,12 @@
 const STORAGE_KEY = "swipe-todo-prototype-v1";
-const SIGNUP_IMPORT_KEY = "swipe-todo-signup-import";
-
 const $ = (selector) => document.querySelector(selector);
 let supabaseClient = null;
 let signedInUser = null;
 let cloudSyncTimer = null;
 let checkedSignupEmail = "";
+let displayName = "";
+let signupOnboarding = false;
+let pendingSignupState = null;
 
 const toDateKey = (date) => {
   const year = date.getFullYear();
@@ -176,10 +177,24 @@ const renderAccount = () => {
   const status = $("#account-status");
   if (!status) return;
   const signedIn = Boolean(signedInUser);
-  status.textContent = signedIn ? `${signedInUser.email}에 저장됨` : "이 기기에 저장됨";
+  status.textContent = signedIn ? `${displayName || signedInUser.email}에 저장됨` : "이 기기에 저장됨";
+  $("#today-title").textContent = signedIn && displayName ? `${displayName}의 오늘` : "오늘";
+  $("#daily-title").textContent = signedIn && displayName ? `${displayName}의 데일리루틴` : "데일리루틴";
+  $("#plan-title").textContent = signedIn && displayName ? `${displayName}의 계획` : "계획";
   $("#open-login-button").hidden = signedIn;
   $("#open-signup-button").hidden = signedIn;
   $("#logout-button").hidden = !signedIn;
+};
+
+const loadProfile = async () => {
+  if (!supabaseClient || !signedInUser) return;
+  const { data } = await supabaseClient
+    .from("profiles")
+    .select("nickname")
+    .eq("user_id", signedInUser.id)
+    .maybeSingle();
+  displayName = data?.nickname || "";
+  renderAccount();
 };
 
 const uploadCloudState = async () => {
@@ -228,7 +243,10 @@ const loadCloudState = async () => {
 const applySession = async (session) => {
   signedInUser = session?.user || null;
   renderAccount();
-  if (signedInUser) await loadCloudState();
+  if (signedInUser && !signupOnboarding) {
+    await loadProfile();
+    await loadCloudState();
+  }
 };
 
 const submitLogin = async (event) => {
@@ -250,6 +268,12 @@ const submitLogin = async (event) => {
   }
   showAuthMessage("login", "");
   await applySession(data.session);
+  if (!displayName) {
+    signupOnboarding = true;
+    pendingSignupState = null;
+    activateView("profile-view");
+    return;
+  }
   activateView("today-view");
 };
 
@@ -274,8 +298,8 @@ const submitSignup = async (event) => {
     showAuthMessage("signup", "비밀번호가 같지 않아요.");
     return;
   }
-  const importLocal = hasTodoData(state) && window.confirm("이 기기의 데이터를 계정에 가져올까요?");
-  localStorage.setItem(SIGNUP_IMPORT_KEY, importLocal ? "yes" : "no");
+  pendingSignupState = normalizeState(state);
+  signupOnboarding = true;
   const button = event.currentTarget.querySelector('button[type="submit"]');
   showAuthMessage("signup", "가입 중...");
   const { data, error } = await withBusyButton(button, "가입 중", () =>
@@ -288,21 +312,60 @@ const submitSignup = async (event) => {
     })
   );
   if (error) {
+    signupOnboarding = false;
+    pendingSignupState = null;
     showAuthMessage("signup", error.message.includes("already") ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
     return;
   }
-  if (!importLocal) {
-    state = createEmptyState();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
   if (data.session) {
     signedInUser = data.session.user;
-    await uploadCloudState();
     renderAccount();
-    activateView("today-view");
+    $("#profile-nickname").value = "";
+    activateView("profile-view");
     return;
   }
+  signupOnboarding = false;
+  pendingSignupState = null;
   showAuthMessage("signup", "가입됐어요. 로그인해 주세요.");
+};
+
+const submitProfile = async (event) => {
+  event.preventDefault();
+  const nickname = $("#profile-nickname").value.trim();
+  if (!nickname) {
+    showAuthMessage("profile", "별명을 입력해 주세요.");
+    return;
+  }
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  showAuthMessage("profile", "저장 중...");
+  const { error } = await withBusyButton(button, "저장 중", () =>
+    supabaseClient.from("profiles").upsert({
+      user_id: signedInUser.id,
+      nickname,
+      updated_at: new Date().toISOString()
+    })
+  );
+  if (error) {
+    showAuthMessage("profile", "별명을 저장하지 못했어요.");
+    return;
+  }
+  displayName = nickname;
+  if (hasTodoData(pendingSignupState || createEmptyState())) {
+    renderAccount();
+    activateView("import-choice-view");
+    return;
+  }
+  await finishSignupOnboarding(false);
+};
+
+const finishSignupOnboarding = async (importLocal) => {
+  state = importLocal && pendingSignupState ? pendingSignupState : createEmptyState();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  await uploadCloudState();
+  signupOnboarding = false;
+  pendingSignupState = null;
+  renderAccount();
+  activateView("today-view");
 };
 
 const checkSignupEmail = async () => {
@@ -338,9 +401,11 @@ const checkSignupEmail = async () => {
 const signOut = async () => {
   if (supabaseClient) await supabaseClient.auth.signOut();
   signedInUser = null;
+  displayName = "";
+  signupOnboarding = false;
+  pendingSignupState = null;
   state = createEmptyState();
   localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(SIGNUP_IMPORT_KEY);
   renderAccount();
   activateView("today-view");
   showStatus("로그아웃했어요.");
@@ -1068,6 +1133,9 @@ $("#import-input").addEventListener("change", (event) => {
 
 $("#login-form")?.addEventListener("submit", submitLogin);
 $("#signup-form")?.addEventListener("submit", submitSignup);
+$("#profile-form")?.addEventListener("submit", submitProfile);
+$("#import-signup-data-button")?.addEventListener("click", () => finishSignupOnboarding(true));
+$("#start-fresh-button")?.addEventListener("click", () => finishSignupOnboarding(false));
 $("#email-check-button")?.addEventListener("click", checkSignupEmail);
 $("#signup-email")?.addEventListener("input", () => {
   checkedSignupEmail = "";
