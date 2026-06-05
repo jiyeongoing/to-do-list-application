@@ -27,7 +27,8 @@ Redirect URL: https://jiyeongoing.github.io/to-do-list-application/
 ```js
 window.SWIPE_TODO_SUPABASE = {
   url: "https://PROJECT_ID.supabase.co",
-  anonKey: "PUBLISHABLE_OR_ANON_KEY"
+  anonKey: "PUBLISHABLE_OR_ANON_KEY",
+  redirectUrl: "https://jiyeongoing.github.io/to-do-list-application/"
 };
 ```
 

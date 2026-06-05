@@ -223,6 +223,7 @@ const appCode = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const htmlCode = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const serviceWorkerCode = fs.readFileSync(path.join(__dirname, "..", "service-worker.js"), "utf8");
 const supabaseSchemaCode = fs.readFileSync(path.join(__dirname, "..", "supabase", "schema.sql"), "utf8");
+const notFoundCode = fs.readFileSync(path.join(__dirname, "..", "404.html"), "utf8");
 
 const runAppTest = (body) => {
   const document = createDocument();
@@ -312,6 +313,13 @@ test("Supabase 테이블은 사용자별 RLS 정책으로 보호한다", () => {
   assert.match(supabaseSchemaCode, /auth\.uid\(\)/);
   assert.match(supabaseSchemaCode, /Users can read own todo state/);
   assert.match(supabaseSchemaCode, /Users can update own todo state/);
+});
+
+test("가입 인증 링크는 배포 페이지로 돌아오고 잘못된 경로도 복구한다", () => {
+  assert.match(appCode, /emailRedirectTo: window\.SWIPE_TODO_SUPABASE\.redirectUrl/);
+  assert.match(notFoundCode, /to-do-list-application\//);
+  assert.match(notFoundCode, /location\.search/);
+  assert.match(notFoundCode, /location\.hash/);
 });
 
 test("샘플 불러오기와 데이터 비우기를 지원한다", () => {

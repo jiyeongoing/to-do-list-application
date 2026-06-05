@@ -245,7 +245,13 @@ const submitSignup = async (event) => {
   }
   const importLocal = hasTodoData(state) && window.confirm("이 기기의 데이터를 계정에 가져올까요?");
   localStorage.setItem(SIGNUP_IMPORT_KEY, importLocal ? "yes" : "no");
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.SWIPE_TODO_SUPABASE.redirectUrl
+    }
+  });
   if (error) {
     showAuthMessage("signup", error.message.includes("already") ? "이미 가입된 이메일이에요." : "가입 정보를 확인해 주세요.");
     return;
@@ -286,8 +292,7 @@ const initializeCloud = async () => {
   const { data } = await supabaseClient.auth.getSession();
   await applySession(data.session);
   supabaseClient.auth.onAuthStateChange((_event, session) => {
-    signedInUser = session?.user || null;
-    renderAccount();
+    applySession(session);
   });
 };
 
